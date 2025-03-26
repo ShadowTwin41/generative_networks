@@ -1,12 +1,11 @@
 # Generation of Synthetic Datasets Will Solve Anonymisation Problem for Collaborative Medical Image Analysis and Data Sharing: Feasibility Demonstrated in Head and Neck CT Images and Brain Tumour MRI Images
 
-A brief description of what this project does and who it's for.
 
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
+- [Run conditional training with WDM](#run-conditional-training-with-wdm)
+- [Ground truth bone](#ground-truth-bone)
 - [License](#license)
 
 ## Installation
@@ -25,7 +24,6 @@ conda activate wdm
 
 conda install -c conda-forge \
     numpy=1.26.4 \
-    pywavelets=1.4.1 \
     scipy=1.12.0 \
     pip -y
 
@@ -35,13 +33,16 @@ pip install \
     tensorboard==2.16.2 \
     matplotlib==3.8.3 \
     tqdm==4.66.2 \
-    dicom2nifti==2.4.10
-pip install scikit-image   pip install TotalSegmentator
+    dicom2nifti==2.4.10 \
+    scikit-image \
+    diffusers["torch"] \
+    transformers \
+    monai \
+    PyWavelets \
+    pandas
+
 Install PyTorch from https://pytorch.org/get-started/locally/
-pip install diffusers["torch"] transformers
-pip install monai
-pip install PyWavelets
-pip install pandas
+pip install TotalSegmentator
 ```
 
 ## Run conditional training with WDM
@@ -132,7 +133,7 @@ USE_WAVELET=True;
 --clip_max=1000;
 ```
 
-To start the training the inpainting model:
+To start the training of the inpainting model:
   *   In the run_inpaint.sh Ensure that:
       * MODE='c_train' # For training
         * To resume the training: ```--resume_checkpoint='...' --resume_step=...```
@@ -169,6 +170,17 @@ USE_WAVELET=False;
     * Mainly ```pretrained_weights_path```
   * For inpainting a tumour on full resolution scans, use ```run_inder_DPM++_inpaint.sh``` 
     * Change: ```CLIP_MIN=; CLIP_MAX=; MODEL_PATH=; USE_MASK_BLUR=; output_dir=; data_dir=;```
+
+## Ground truth bone:
+The following repositories were used to create the ground truth for bone segmentation. 
+Follow the steps in each of these:
+* [TotalSegmentator](https://github.com/wasserth/TotalSegmentator)
+
+* [totalspineseg](https://github.com/neuropoly/totalspineseg)
+
+* [AMASSS_CBCT](https://github.com/Maxlo24/AMASSS_CBCT)
+
+
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
