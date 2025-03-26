@@ -5,6 +5,7 @@
 
 - [Installation](#installation)
 - [Run conditional training with WDM](#run-conditional-training-with-wdm)
+- [nnUNet - Segmentation](#nnunet---segmentation)
 - [Ground truth bone](#ground-truth-bone)
 - [License](#license)
 
@@ -171,6 +172,10 @@ USE_WAVELET=False;
   * For inpainting a tumour on full resolution scans, use ```run_inder_DPM++_inpaint.sh``` 
     * Change: ```CLIP_MIN=; CLIP_MAX=; MODEL_PATH=; USE_MASK_BLUR=; output_dir=; data_dir=;```
 
+## nnUNet - Segmentation
+We saved the version installed of the nnUNet, which is available in the nnUNet folder. 
+
+No major changes were made to it, therefore, installing the nnUNet from the [source](https://github.com/MIC-DKFZ/nnUNet) might lead to the same or better results/performance. 
 ## Ground truth bone:
 The following repositories were used to create the ground truth for bone segmentation. 
 Follow the steps in each of these:
