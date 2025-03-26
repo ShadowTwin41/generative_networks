@@ -5,6 +5,7 @@
 - [Generation of Synthetic Datasets Will Solve Anonymisation Problem for Collaborative Medical Image Analysis and Data Sharing: Feasibility Demonstrated in Head and Neck CT Images and Brain Tumour MRI Images](#generation-of-synthetic-datasets-will-solve-anonymisation-problem-for-collaborative-medical-image-analysis-and-data-sharing-feasibility-demonstrated-in-head-and-neck-ct-images-and-brain-tumour-mri-images)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
+  - [GANs training](#gans-training)
   - [Run conditional training with WDM](#run-conditional-training-with-wdm)
   - [nnUNet - Segmentation](#nnunet---segmentation)
   - [Ground truth bone](#ground-truth-bone)
@@ -48,36 +49,33 @@ Install PyTorch from https://pytorch.org/get-started/locally/
 pip install TotalSegmentator
 ```
  ## GANs training 
- It requires two GPUs to train (one for the Generator and one for the Discriminator)
- To train for the CT in src/run
- python cWGAN_GP_style_256.py  --W_ADV_D 1 --W_ADV_G 1 --W_PWA 1000 --W_PWT 100 --W_GP 10 --IN_CHANNEL_G 3 --OUT_CHANNEL_G 1 --IN_CHANNEL_D 4  --LR_D 0.0002 --LR_G 0.0002 --TOTAL_EPOCHS 1000 --NUM_WORKERS 6 --DATASET training --UNET Unet_FC --SKIP_LATENT False --TAHN_ACT False --DA True --NORM_FUNC Linear --CLIP_MIN -200 --CLIP_MAX 200 --EXP_NAME W_PWA100__W_PWT10__Unet_FC_min200_200 --RESUME 117
+ * The scripts for the GAN training are inside of the folder ```GANs```.
+ * It requires two GPUs to train (one for the Generator and one for the Discriminator).
+ * The paths within the training files and inference files may need to be changed.
+ * To train for the CT
+   * ```cd src/run```
+   * ```python cWGAN_GP_style_256.py  --W_ADV_D 1 --W_ADV_G 1 --W_PWA 1000 --W_PWT 100 --W_GP 10 --IN_CHANNEL_G 3 --OUT_CHANNEL_G 1 --IN_CHANNEL_D 4  --LR_D 0.0002 --LR_G 0.0002 --TOTAL_EPOCHS 1000 --NUM_WORKERS 6 --DATASET training --UNET Unet_FC --SKIP_LATENT False --TAHN_ACT False --DA True --NORM_FUNC Linear --CLIP_MIN -200 --CLIP_MAX 200 --EXP_NAME W_PWA100__W_PWT10__Unet_FC_min200_200 --RESUME 117```
  
- To train Brats
- python cWGAN_GP_style_256_BraTS.py  --W_ADV_D 1 --W_ADV_G 1 --W_PWA 100 --W_PWT 100 --W_GP 10 --IN_CHANNEL_G 3 --OUT_CHANNEL_G 1 --IN_CHANNEL_D 4  --LR_D 0.0002 --LR_G 0.0002 --TOTAL_EPOCHS 1000 --NUM_WORKERS 6 --DATASET training --UNET Unet_FC --SKIP_LATENT False --TAHN_ACT False --DA True --EXP_NAME BraTS_W_PWA100__W_PWT100__Unet_FC_new --RESUME 990
+  * To train Brats
+    * ```cd src/run```
+    * ```python cWGAN_GP_style_256_BraTS.py  --W_ADV_D 1 --W_ADV_G 1 --W_PWA 100 --W_PWT 100 --W_GP 10 --IN_CHANNEL_G 3 --OUT_CHANNEL_G 1 --IN_CHANNEL_D 4  --LR_D 0.0002 --LR_G 0.0002 --TOTAL_EPOCHS 1000 --NUM_WORKERS 6 --DATASET training --UNET Unet_FC --SKIP_LATENT False --TAHN_ACT False --DA True --EXP_NAME BraTS_W_PWA100__W_PWT100__Unet_FC_new --RESUME 990```
  
- src/notebooks contains the codes for inference.  The script in src/run /CT_HNC_synthetic_generation can also be used for it.
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+  * For inference:
+    * ```src/notebooks```  
+    * The script in ```src/run /CT_HNC_synthetic_generation.py``` can also be used.
+  
 ## Run conditional training with WDM
 ```cd wdm-3d```
 
 To start the training with the full resolution scans:
   *   In the run.sh (for the CT dataset), or in run_brats.sh (for the MRI dataset) file. Ensure that:
-      * MODE='c_train' # For training
+      * ```MODE='c_train'``` # For training
         * To resume the training: ```--resume_checkpoint='...' --resume_step=...```
 
       * MODE='c_sample' # For inference
         * ```ITERATIONS=...; SAMPLING_STEPS=1000; RUN_DIR="runs/..."; OUTPUT_DIR=./results/...; ```
-      * TRAIN_MODE='conv_before_concat', 'concat_cond' or 'wavelet_cond'
-      * --save_interval=100 # Adjust this value to your machine
+      * ```TRAIN_MODE='conv_before_concat', 'concat_cond' or 'wavelet_cond'```
+      * ```--save_interval=100``` # Adjust this value to your machine
 
   * $M_{all\_conv}^{WDM_{200}}$ or $M_{seg\_conv}^{WDM_{MRI}}$:
 ```
@@ -156,12 +154,12 @@ USE_WAVELET=True;
 
 To start the training of the inpainting model:
   *   In the run_inpaint.sh Ensure that:
-      * MODE='c_train' # For training
+      * ```MODE='c_train'``` # For training
         * To resume the training: ```--resume_checkpoint='...' --resume_step=...```
 
       * MODE='c_sample' # For inference
         * ```ITERATIONS=...; SAMPLING_STEPS=1000; RUN_DIR="runs/..."; OUTPUT_DIR=./results/...; ```
-      * --save_interval=100 # Adjust this value to your machine
+      * ```--save_interval=100``` # Adjust this value to your machine
   
   * $M_{all\_cat}^{DDPM_{200}}$:
 ```
