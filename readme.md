@@ -47,7 +47,25 @@ pip install \
 Install PyTorch from https://pytorch.org/get-started/locally/
 pip install TotalSegmentator
 ```
-
+ ## GANs training 
+ It requires two GPUs to train (one for the Generator and one for the Discriminator)
+ To train for the CT in src/run
+ python cWGAN_GP_style_256.py  --W_ADV_D 1 --W_ADV_G 1 --W_PWA 1000 --W_PWT 100 --W_GP 10 --IN_CHANNEL_G 3 --OUT_CHANNEL_G 1 --IN_CHANNEL_D 4  --LR_D 0.0002 --LR_G 0.0002 --TOTAL_EPOCHS 1000 --NUM_WORKERS 6 --DATASET training --UNET Unet_FC --SKIP_LATENT False --TAHN_ACT False --DA True --NORM_FUNC Linear --CLIP_MIN -200 --CLIP_MAX 200 --EXP_NAME W_PWA100__W_PWT10__Unet_FC_min200_200 --RESUME 117
+ 
+ To train Brats
+ python cWGAN_GP_style_256_BraTS.py  --W_ADV_D 1 --W_ADV_G 1 --W_PWA 100 --W_PWT 100 --W_GP 10 --IN_CHANNEL_G 3 --OUT_CHANNEL_G 1 --IN_CHANNEL_D 4  --LR_D 0.0002 --LR_G 0.0002 --TOTAL_EPOCHS 1000 --NUM_WORKERS 6 --DATASET training --UNET Unet_FC --SKIP_LATENT False --TAHN_ACT False --DA True --EXP_NAME BraTS_W_PWA100__W_PWT100__Unet_FC_new --RESUME 990
+ 
+ src/notebooks contains the codes for inference.  The script in src/run /CT_HNC_synthetic_generation can also be used for it.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 ## Run conditional training with WDM
 ```cd wdm-3d```
 
