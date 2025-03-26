@@ -3,11 +3,14 @@
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Run conditional training with WDM](#run-conditional-training-with-wdm)
-- [nnUNet - Segmentation](#nnunet---segmentation)
-- [Ground truth bone](#ground-truth-bone)
-- [License](#license)
+- [Generation of Synthetic Datasets Will Solve Anonymisation Problem for Collaborative Medical Image Analysis and Data Sharing: Feasibility Demonstrated in Head and Neck CT Images and Brain Tumour MRI Images](#generation-of-synthetic-datasets-will-solve-anonymisation-problem-for-collaborative-medical-image-analysis-and-data-sharing-feasibility-demonstrated-in-head-and-neck-ct-images-and-brain-tumour-mri-images)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Run conditional training with WDM](#run-conditional-training-with-wdm)
+  - [nnUNet - Segmentation](#nnunet---segmentation)
+  - [Ground truth bone:](#ground-truth-bone)
+  - [Evaluation metrics](#evaluation-metrics)
+  - [License](#license)
 
 ## Installation
 
@@ -185,6 +188,12 @@ Follow the steps in each of these:
 
 * [AMASSS_CBCT](https://github.com/Maxlo24/AMASSS_CBCT)
 
+## Evaluation metrics
+In the folder wdm-3d/notebooks are the files used for computing the MAE, MS-SSIM and the Radiomics.
+
+* The files ```Radiomics_tumour.py``` ```Radiomics_soft_tissue.py``` and ```Radiomics_bone.py``` can be used to extract the features of the tumour region, soft tissue and bone, respectively.
+
+* For data mining, use the  ```Radiomics.ipynb``` or ```Radiomics_MRI.ipynb``` notebooks.
 
 ## License
 
