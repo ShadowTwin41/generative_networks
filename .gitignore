@@ -4,11 +4,11 @@ experiments/
 logs/
 results/
 trash/
-src/Synthetic-CT-generation-from-MRI-using-3D-transformer-based-denoising-diffusion-model/MRI_to_CT_brain_for_dosimetric/
 .vscode/
 run/outputs/
 **/runs/*
 **/HnN_cancer_data/*
+**/results/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -323,7 +323,7 @@ def get_affine_and_header(file_path):
 
 def get_list_of_segs(seg_path, json_file):
     # Get list of segmentations
-    seg_path = "/projects/brats2023_a_f/Aachen/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/seg"
+    seg_path = "../HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/seg"
     with open(json_file, 'r') as file:
         data_train = json.load(file)
         data_train = data_train['training']
@@ -392,6 +392,7 @@ def main():
                          mode='train',
                          img_size=args.image_size)
     elif args.dataset == 'hnn':
+        from_monai_loader = True
         assert args.image_size in [128, 256], "We currently just support image sizes: 128, 256"
         dl, ds = HnNVolumes(
             args=args,
@@ -407,6 +408,7 @@ def main():
             clip_max=int(args.clip_max)).get_dl_ds()
     
     elif args.dataset == 'c_brats':
+        from_monai_loader = True
         assert args.image_size in [128, 256], "We currently just support image sizes: 128, 256"
         dl, ds = c_BraTSVolumes(
             directory=args.data_dir,
@@ -422,7 +424,7 @@ def main():
     
     elif args.dataset == 'hnn_tumour_inpainting':
         if args.from_monai_loader == False:
-            with open('/projects/brats2023_a_f/Aachen/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/data_split.json', 'r') as file:
+            with open('../HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/data_split.json', 'r') as file:
                 training_cases = json.load(file)
                 training_cases = training_cases['training']
             dl = training_cases # Synthtic cases TODO
@@ -433,8 +435,8 @@ def main():
             #        dl.append(case)
 
             # TODO Synthtic cases
-            segs_list = get_list_of_segs(seg_path='/projects/brats2023_a_f/Aachen/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/seg', 
-                                         json_file='/projects/brats2023_a_f/Aachen/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/data_split.json'
+            segs_list = get_list_of_segs(seg_path='../HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/seg', 
+                                         json_file='../HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/data_split.json'
                                          )
             from_monai_loader = False
         else:
@@ -459,7 +461,6 @@ def main():
 
     # Start iteration through data loader
     for ind, batch in enumerate(datal):
-        
         if from_monai_loader==False: 
             case_name = f"{batch['image'].split('/')[-1].split('.nii.gz')[0]}"
             
@@ -468,9 +469,9 @@ def main():
 
             case_path = os.path.join(args.input_dir, f"{case_name}_CT_n0.nii.gz") # TODO synthetic data
             seg_name = random.choice(segs_list) # TODO synthetic data
-            seg_path = os.path.join('/projects/brats2023_a_f/Aachen/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/seg', seg_name) # TODO synthetic data
+            seg_path = os.path.join('../HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/seg', seg_name) # TODO synthetic data
             
-            mask_file_path = os.path.join(f"/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/results/Synthetic_Datasets/Whole_scans/Bone_segmentation/Mask_for_tumour_inpaint", args.output_dir.split('/')[-2], "Original_1000", f"{case_name}_CT_n0_tumour_place.nii.gz")
+            mask_file_path = os.path.join(f"./results/Synthetic_Datasets/Whole_scans/Bone_segmentation/Mask_for_tumour_inpaint", args.output_dir.split('/')[-2], "Original_1000", f"{case_name}_CT_n0_tumour_place.nii.gz")
             contrast_value = batch["contrast"]
         else:
             # Each batch contains the same data used for training, i.e., scans and conditions
@@ -487,325 +488,292 @@ def main():
             print(f"Loaded {seg_path}")
             # Set case id
             case_name = case_path.split('/')[-1].split(".nii.gz")[0]
-        try:
-            if os.path.isfile(os.path.join(args.output_dir, f'{case_name}_CT_n0.nii.gz')):
-                continue # Check if file was generated already
-            if "empty" in seg_path and args.no_seg==False and (args.train_mode!="default_tumour_inpainting" or args.train_mode!="tumour_inpainting"):
-                print(f"Skipping: {seg_path}")
-                pass
+        #try:
+        if os.path.isfile(os.path.join(args.output_dir, f'{case_name}_CT_n0.nii.gz')):
+            continue # Check if file was generated already
+        if "empty" in seg_path and args.no_seg==False and (args.train_mode!="default_tumour_inpainting" or args.train_mode!="tumour_inpainting"):
+            print(f"Skipping: {seg_path}")
+            pass
+        else:
+            # Defining the img (noise) input to the model
+            if args.use_wavelet:
+                wavelet_coefficients = int(len(args.modality.split("_"))*8)
+                img = th.randn(args.batch_size,         # Batch size
+                            wavelet_coefficients,    # 8 wavelet coefficients
+                            args.image_size//2,      # Half spatial resolution (D)
+                            args.image_size//2,      # Half spatial resolution (H)
+                            args.image_size//2,      # Half spatial resolution (W)
+                            ).to(dist_util.dev())
             else:
-                # Defining the img (noise) input to the model
-                if args.use_wavelet:
-                    wavelet_coefficients = int(len(args.modality.split("_"))*8)
-                    img = th.randn(args.batch_size,         # Batch size
-                                wavelet_coefficients,    # 8 wavelet coefficients
-                                args.image_size//2,      # Half spatial resolution (D)
-                                args.image_size//2,      # Half spatial resolution (H)
-                                args.image_size//2,      # Half spatial resolution (W)
+                img = th.randn(args.batch_size,         # Batch size
+                                1,    
+                                args.image_size,      # Half spatial resolution (D)
+                                args.image_size,      # Half spatial resolution (H)
+                                args.image_size,      # Half spatial resolution (W)
                                 ).to(dist_util.dev())
+
+            model_kwargs = {} # Not really used
+            affine, header = get_affine_and_header(case_path)
+
+            if args.dataset == 'hnn_tumour_inpainting':
+                # Setting conditions and healthy scan for tumour inpainting
+                if from_monai_loader:
+                    # Using the data coming from the MONAI data loader
+                    # This contains real scans, real segmentations and the real contrast. 
+                    # For fake scans set  from_monai_loader to False
+                    scan_ct = batch["scan_ct"].to(dist_util.dev())
+                    healthy_ct_scan_full_res = batch["scan_ct_origin"].to(dist_util.dev())
+                    healthy_ct_scan_origin_intensities = th.clone(healthy_ct_scan_full_res)
+                    original_healthy_tensor = batch["scan_volume_crop_pad"].to(dist_util.dev())
+                    label = batch["label"].to(dist_util.dev())
+                    label_crop_pad = batch["label_crop_pad"].to(dist_util.dev())
+                    contrast = batch["contrast"].to(dist_util.dev())
+                    contrast_tensor = batch["contrast_tensor"].to(dist_util.dev())
+                    no_contrast_tensor = batch["no_contrast_tensor"].to(dist_util.dev())
+                    if args.train_mode == 'tumour_inpainting':
+                        healthy_ct_scan = original_healthy_tensor
+                        label_crop_pad_dillated = label_crop_pad.cpu().detach().clone().numpy().squeeze()
+                        structuring_element = np.ones((3, 3, 3), dtype=str)
+                        dilated_mask = binary_dilation(label_crop_pad_dillated, structure=structuring_element, iterations=5)
+                        dilated_mask = th.from_numpy(dilated_mask).float()
+                        dilated_mask = dilated_mask.unsqueeze(dim=0).unsqueeze(dim=0).cuda()
+                        blured_mask = blur_mask_3d(mask=dilated_mask, label_crop_pad=label_crop_pad, blur_factor=25, blur_type=args.blur_mask)
+                    else:
+                        healthy_ct_scan = th.clone(no_contrast_tensor)
                 else:
-                    img = th.randn(args.batch_size,         # Batch size
-                                    1,    
-                                    args.image_size,      # Half spatial resolution (D)
-                                    args.image_size,      # Half spatial resolution (H)
-                                    args.image_size,      # Half spatial resolution (W)
-                                    ).to(dist_util.dev())
-
-                model_kwargs = {} # Not really used
-                affine, header = get_affine_and_header(case_path)
-
-                if args.dataset == 'hnn_tumour_inpainting':
-                    # Setting conditions and healthy scan for tumour inpainting
-                    if from_monai_loader:
-                        # Using the data coming from the MONAI data loader
-                        # This contains real scans, real segmentations and the real contrast. 
-                        # For fake scans set  from_monai_loader to False
-                        scan_ct = batch["scan_ct"].to(dist_util.dev())
-                        healthy_ct_scan_full_res = batch["scan_ct_origin"].to(dist_util.dev())
-                        healthy_ct_scan_origin_intensities = th.clone(healthy_ct_scan_full_res)
-                        original_healthy_tensor = batch["scan_volume_crop_pad"].to(dist_util.dev())
-                        label = batch["label"].to(dist_util.dev())
-                        label_crop_pad = batch["label_crop_pad"].to(dist_util.dev())
-                        contrast = batch["contrast"].to(dist_util.dev())
-                        contrast_tensor = batch["contrast_tensor"].to(dist_util.dev())
-                        no_contrast_tensor = batch["no_contrast_tensor"].to(dist_util.dev())
-                        if args.train_mode == 'tumour_inpainting':
-                            healthy_ct_scan = original_healthy_tensor
-                            label_crop_pad_dillated = label_crop_pad.cpu().detach().clone().numpy().squeeze()
-                            structuring_element = np.ones((3, 3, 3), dtype=str)
-                            dilated_mask = binary_dilation(label_crop_pad_dillated, structure=structuring_element, iterations=5)
-                            dilated_mask = th.from_numpy(dilated_mask).float()
-                            dilated_mask = dilated_mask.unsqueeze(dim=0).unsqueeze(dim=0).cuda()
-                            blured_mask = blur_mask_3d(mask=dilated_mask, label_crop_pad=label_crop_pad, blur_factor=25, blur_type=args.blur_mask)
-                        else:
-                            healthy_ct_scan = th.clone(no_contrast_tensor)
+                    if case_path.endswith("_CT_n0.nii.gz"):
+                        print("Random tumour")
+                        print(f"Number of cases for inference: {len(datal)}")
+                        print(f"Number of segmentations: {len(segs_list)}")
+                        sagittal, coronal, axial, no_contrast_tensor, contrast_tensor, label_crop_pad, healthy_ct_scan, healthy_ct_scan_origin_intensities, healthy_ct_scan_full_res = get_label_condition(args=args, case_path=case_path, contrast_value=contrast_value, seg_path=seg_path, mask_file_path=mask_file_path)
+                        print(f"sagittal: {sagittal}")
+                        print(f"coronal: {coronal}")
+                        print(f"axial: {axial}")
                     else:
-                        if case_path.endswith("_CT_n0.nii.gz"):
-                            print("Random tumour")
-                            print(f"Number of cases for inference: {len(datal)}")
-                            print(f"Number of segmentations: {len(segs_list)}")
-                            sagittal, coronal, axial, no_contrast_tensor, contrast_tensor, label_crop_pad, healthy_ct_scan, healthy_ct_scan_origin_intensities, healthy_ct_scan_full_res = get_label_condition(args=args, case_path=case_path, contrast_value=contrast_value, seg_path=seg_path, mask_file_path=mask_file_path)
-                            print(f"sagittal: {sagittal}")
-                            print(f"coronal: {coronal}")
-                            print(f"axial: {axial}")
-                        else:
-                            print("Tumour in the same position")
-                            print(f"Number of cases for inference: {len(datal)}")
-                            sagittal, coronal, axial, no_contrast_tensor, contrast_tensor, label_crop_pad, healthy_ct_scan, healthy_ct_scan_origin_intensities, healthy_ct_scan_full_res = get_label_condition_no_random(args=args, case_path=case_path, contrast_value=contrast_value, seg_path=seg_path)
-                            print(f"sagittal: {sagittal}")
-                            print(f"coronal: {coronal}")
-                            print(f"axial: {axial}")
-                        if args.train_mode == 'tumour_inpainting':
-                            label_crop_pad_dillated = label_crop_pad.cpu().detach().clone().numpy().squeeze()
-                            structuring_element = np.ones((3, 3, 3), dtype=str)
-                            dilated_mask = binary_dilation(label_crop_pad_dillated, structure=structuring_element, iterations=5)
-                            dilated_mask = th.from_numpy(dilated_mask).float()
-                            dilated_mask = dilated_mask.unsqueeze(dim=0).unsqueeze(dim=0).cuda()
-                            blured_mask = blur_mask_3d(dilated_mask, label_crop_pad, blur_factor=25, blur_type=args.blur_mask) 
-                        else:
-                            healthy_ct_scan = th.clone(no_contrast_tensor)
-
-                    # Setting the label_condition
-                    if args.blur_mask:
-                        print(f"USING BLUR MASK: {args.blur_mask}")
-                        label_condition = th.cat((no_contrast_tensor, contrast_tensor, label_crop_pad, blured_mask, healthy_ct_scan), dim=1)
-                        
+                        print("Tumour in the same position")
+                        print(f"Number of cases for inference: {len(datal)}")
+                        sagittal, coronal, axial, no_contrast_tensor, contrast_tensor, label_crop_pad, healthy_ct_scan, healthy_ct_scan_origin_intensities, healthy_ct_scan_full_res = get_label_condition_no_random(args=args, case_path=case_path, contrast_value=contrast_value, seg_path=seg_path)
+                        print(f"sagittal: {sagittal}")
+                        print(f"coronal: {coronal}")
+                        print(f"axial: {axial}")
+                    if args.train_mode == 'tumour_inpainting':
+                        label_crop_pad_dillated = label_crop_pad.cpu().detach().clone().numpy().squeeze()
+                        structuring_element = np.ones((3, 3, 3), dtype=str)
+                        dilated_mask = binary_dilation(label_crop_pad_dillated, structure=structuring_element, iterations=5)
+                        dilated_mask = th.from_numpy(dilated_mask).float()
+                        dilated_mask = dilated_mask.unsqueeze(dim=0).unsqueeze(dim=0).cuda()
+                        blured_mask = blur_mask_3d(dilated_mask, label_crop_pad, blur_factor=25, blur_type=args.blur_mask) 
                     else:
-                        label_condition = th.cat((no_contrast_tensor, contrast_tensor, label_crop_pad, healthy_ct_scan), dim=1)
+                        healthy_ct_scan = th.clone(no_contrast_tensor)
+
+                # Setting the label_condition
+                if args.blur_mask=="edge_blur" or args.blur_mask=="full_blur":
+                    print(f"USING BLUR MASK: {args.blur_mask}")
+                    label_condition = th.cat((no_contrast_tensor, contrast_tensor, label_crop_pad, blured_mask, healthy_ct_scan), dim=1)
+                    
+                else:
+                    label_condition = th.cat((no_contrast_tensor, contrast_tensor, label_crop_pad, healthy_ct_scan), dim=1)
+            
+            elif args.dataset == 'hnn' and args.train_mode == 'concat_cond':
+                label_condition = batch["seg"].to(dist_util.dev())
+                if label_condition.shape[1]==2:
+                    segmentation = th.zeros_like(label_condition[:,0:1,:,:,:])
+                else:
+                    segmentation = label_condition[:,2:3,:,:,:] 
+
+                contrast_tensor = label_condition[0][1]
+                no_contrast_tensor = label_condition[0][0]
+                resize = Resize((128, 128, 128), size_mode='all', mode="nearest", align_corners=None, anti_aliasing=False, anti_aliasing_sigma=None, dtype=th.float32, lazy=False)
+                label_condition = resize(label_condition[0]).unsqueeze(0)
+            elif args.dataset == 'c_brats':
+                label_condition = batch['seg'].to(dist_util.dev())
+                # Convert the label to the BraTS format
+                tumour_core = label_condition[0][0]
+                whole_tumour = label_condition[0][1]
+                enhancing_tumour = label_condition[0][2]
+                segmentation = th.zeros_like(tumour_core)
+                segmentation[whole_tumour==1] = 2
+                segmentation[tumour_core==1] = 1
+                segmentation[enhancing_tumour==1] = 3
+                # Crop segmentation
+                segmentation = segmentation.cpu().numpy()
+                segmentation = segmentation[8:-8, 8:-8, 50:-51]
+                # Save segmentation
+                output_name = os.path.join(args.output_dir, f'{case_name[:-4]}_label_n0.nii.gz') # TODO
+                segmentation = np.flip(segmentation, axis=1) 
+                segmentation = np.flip(segmentation, axis=0) 
+                segmentation_nii = nib.Nifti1Image(segmentation, affine=affine, header=header) 
+                nib.save(img=segmentation_nii, filename=output_name)
+                print(f'Saved to {output_name}')
                 
-                elif args.dataset == 'hnn' and args.train_mode == 'concat_cond':
-                    label_condition = batch["seg"].to(dist_util.dev())
-                    if label_condition.shape[1]==2:
-                        segmentation = th.zeros_like(label_condition[:,0:1,:,:,:])
-                    else:
-                        segmentation = label_condition[:,2:3,:,:,:] 
-
-                    contrast_tensor = label_condition[0][1]
-                    no_contrast_tensor = label_condition[0][0]
+                if args.train_mode == 'concat_cond':
                     resize = Resize((128, 128, 128), size_mode='all', mode="nearest", align_corners=None, anti_aliasing=False, anti_aliasing_sigma=None, dtype=th.float32, lazy=False)
                     label_condition = resize(label_condition[0]).unsqueeze(0)
-                    #else:
-                    #raise Exception(f"ERROR in the number of channels of the label condition! It should be 3 but label_condition have {label_condition.shape[1]}.\n \
-                    #                The last channel is ignored for the input of the U-Net (the last channel is the tumour segmentation and it is only used for the tumour loss when training)")
-                elif args.dataset == 'c_brats':
-                    label_condition = batch['seg'].to(dist_util.dev())
-                    # Convert the label to the BraTS format
-                    tumour_core = label_condition[0][0]
-                    whole_tumour = label_condition[0][1]
-                    enhancing_tumour = label_condition[0][2]
-                    segmentation = th.zeros_like(tumour_core)
-                    segmentation[whole_tumour==1] = 2
-                    segmentation[tumour_core==1] = 1
-                    segmentation[enhancing_tumour==1] = 3
-                    # Crop segmentation
-                    segmentation = segmentation.cpu().numpy()
-                    segmentation = segmentation[8:-8, 8:-8, 50:-51]
-                    # Save segmentation
-                    output_name = os.path.join(args.output_dir, f'{case_name[:-4]}_label_n0.nii.gz') # TODO
-                    segmentation = np.flip(segmentation, axis=1) 
-                    segmentation = np.flip(segmentation, axis=0) 
-                    segmentation_nii = nib.Nifti1Image(segmentation, affine=affine, header=header) 
+            else:
+                label_condition = batch['seg'].cuda()
+                contrast_tensor = label_condition[0][1]
+                no_contrast_tensor = label_condition[0][0]
+
+                if label_condition.shape[1]==2:
+                    segmentation = th.zeros_like(label_condition[:,0:1,:,:,:])
+                else:
+                    segmentation = label_condition[:,2:3,:,:,:] #
+            
+            if args.train_mode == 'wavelet_cond':
+                LLL = None
+                for condition in label_condition[0]:
+                    condition = condition.unsqueeze(0).unsqueeze(0)
+                    if LLL==None:
+                        LLL, LLH, LHL, LHH, HLL, HLH, HHL, HHH = dwt(condition)
+                        cond_dwt = th.cat([LLL / 3., LLH, LHL, LHH, HLL, HLH, HHL, HHH], dim=1)
+                    else:
+                        LLL, LLH, LHL, LHH, HLL, HLH, HHL, HHH = dwt(condition)
+                        cond_dwt = th.cat([cond_dwt, LLL / 3., LLH, LHL, LHH, HLL, HLH, HHL, HHH], dim=1)
+                label_condition = cond_dwt
+
+            if (args.train_mode=="concat_cond" or args.train_mode=="conv_before_concat" or args.train_mode=="wavelet_cond") and args.dataset!='c_brats':
+                # Check if the scan has contrast or not
+                if th.sum(contrast_tensor) != 0:
+                    cube_coords = th.nonzero(contrast_tensor) 
+                    min_coords = cube_coords.min(dim=0)[0]  # Minimum x, y, z coordinates
+                    max_coords = cube_coords.max(dim=0)[0]  # Maximum x, y, z coordinates
+                else:
+                    cube_coords = th.nonzero(no_contrast_tensor) 
+                    min_coords = cube_coords.min(dim=0)[0]  # Minimum x, y, z coordinates
+                    max_coords = cube_coords.max(dim=0)[0]  # Maximum x, y, z coordinates
+                
+                # Cropping the output of the model considering the ROI
+                x_min, y_min, z_min = min_coords
+                x_max, y_max, z_max = max_coords
+                segmentation = segmentation[:, :, x_min:x_max+1, y_min:y_max+1, z_min:z_max+1]
+                contrast_tensor = contrast_tensor[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1]
+                no_contrast_tensor = no_contrast_tensor[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1]
+        
+
+                if th.sum(segmentation)!=0:
+                    print("In segmentation")
+                    output_name = os.path.join(args.output_dir, f'{case_name}_label_n0.nii.gz') # TODO
+                    segmentation_nii = nib.Nifti1Image(np.flip(segmentation.cpu().numpy()[0][0], axis=1), affine=affine, header=header) 
                     nib.save(img=segmentation_nii, filename=output_name)
                     print(f'Saved to {output_name}')
-                    
-                    if args.train_mode == 'concat_cond':
-                        resize = Resize((128, 128, 128), size_mode='all', mode="nearest", align_corners=None, anti_aliasing=False, anti_aliasing_sigma=None, dtype=th.float32, lazy=False)
-                        label_condition = resize(label_condition[0]).unsqueeze(0)
-                else:
-                    label_condition = batch['seg'].cuda()
-                    contrast_tensor = label_condition[0][1]
-                    no_contrast_tensor = label_condition[0][0]
 
-                    if label_condition.shape[1]==2:
-                        segmentation = th.zeros_like(label_condition[:,0:1,:,:,:])
-                    else:
-                        segmentation = label_condition[:,2:3,:,:,:] #
-                
-                if args.train_mode == 'wavelet_cond':
-                    LLL = None
-                    for condition in label_condition[0]:
-                        condition = condition.unsqueeze(0).unsqueeze(0)
-                        if LLL==None:
-                            LLL, LLH, LHL, LHH, HLL, HLH, HHL, HHH = dwt(condition)
-                            cond_dwt = th.cat([LLL / 3., LLH, LHL, LHH, HLL, HLH, HHL, HHH], dim=1)
-                        else:
-                            LLL, LLH, LHL, LHH, HLL, HLH, HHL, HHH = dwt(condition)
-                            cond_dwt = th.cat([cond_dwt, LLL / 3., LLH, LHL, LHH, HLL, HLH, HHL, HHH], dim=1)
-                    label_condition = cond_dwt
+            # Defining sampling loop
+            sample_fn = diffusion.p_sample_loop 
+            model_output, label_condition = sample_fn(model=model,
+                            shape=img.shape,
+                            noise=img,
+                            time=args.sampling_steps,
+                            mode=args.train_mode,
+                            label_condition=label_condition,
+                            use_wavelet=args.use_wavelet,
+                            use_label_cond_conv=args.use_label_cond_conv,
+                            clip_denoised=args.clip_denoised,
+                            model_kwargs=None,
+                                )
 
-                if (args.train_mode=="concat_cond" or args.train_mode=="conv_before_concat" or args.train_mode=="wavelet_cond") and args.dataset!='c_brats':
-                    # Check if the scan has contrast or not
-                    if th.sum(contrast_tensor) != 0:
-                        cube_coords = th.nonzero(contrast_tensor) 
-                        min_coords = cube_coords.min(dim=0)[0]  # Minimum x, y, z coordinates
-                        max_coords = cube_coords.max(dim=0)[0]  # Maximum x, y, z coordinates
-                    else:
-                        cube_coords = th.nonzero(no_contrast_tensor) 
-                        min_coords = cube_coords.min(dim=0)[0]  # Minimum x, y, z coordinates
-                        max_coords = cube_coords.max(dim=0)[0]  # Maximum x, y, z coordinates
-                    
-                    # Cropping the output of the model considering the ROI
-                    x_min, y_min, z_min = min_coords
-                    x_max, y_max, z_max = max_coords
-                    segmentation = segmentation[:, :, x_min:x_max+1, y_min:y_max+1, z_min:z_max+1]
-                    contrast_tensor = contrast_tensor[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1]
-                    no_contrast_tensor = no_contrast_tensor[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1]
+            if args.use_wavelet:
+                B, C, D, H, W = model_output.size()
+
+                # Convert output of the model back to full resolution 
+                modal_idx = -1
+                for model_output_idx in range(0, C, 8):
+                    modal_idx +=1
+                    sample = idwt(model_output[:, 0+modal_idx*8, :, :, :].view(B, 1, H, W, D) * 3.,
+                                        model_output[:, 1+modal_idx*8, :, :, :].view(B, 1, H, W, D),
+                                        model_output[:, 2+modal_idx*8, :, :, :].view(B, 1, H, W, D),
+                                        model_output[:, 3+modal_idx*8, :, :, :].view(B, 1, H, W, D),
+                                        model_output[:, 4+modal_idx*8, :, :, :].view(B, 1, H, W, D),
+                                        model_output[:, 5+modal_idx*8, :, :, :].view(B, 1, H, W, D),
+                                        model_output[:, 6+modal_idx*8, :, :, :].view(B, 1, H, W, D),
+                                        model_output[:, 7+modal_idx*8, :, :, :].view(B, 1, H, W, D))
+            else:
+                sample = model_output
+
+            if len(sample.shape) == 5:
+                sample = sample.squeeze(dim=1)  # don't squeeze batch dimension for bs 1
             
-                    # Save conditions
-                    """
-                    # ROI is not necessary, only for cropping.
-                        if th.sum(contrast_tensor)!=0:
-                            output_name = os.path.join(args.output_dir, f'{case_name}_ROI_n0.nii.gz') # TODO
-                            contrast_tensor_nii = nib.Nifti1Image(np.flip(contrast_tensor.cpu().numpy()[0][0], axis=1), affine=affine, header=header) 
-                            nib.save(img=contrast_tensor_nii, filename=output_name)
-                            print(f'Saved to {output_name}')
-                        
-                        if th.sum(no_contrast_tensor)!=0:
-                            output_name = os.path.join(args.output_dir, f'{case_name}_ROI_n0.nii.gz') # TODO
-                            no_contrast_tensor_nii = nib.Nifti1Image(np.flip(no_contrast_tensor.cpu().numpy()[0][0], axis=1), affine=affine, header=header) 
-                            nib.save(img=no_contrast_tensor_nii, filename=output_name)
-                            print(f'Saved to {output_name}')
-                    """
-                    if th.sum(segmentation)!=0:
-                        print("In segmentation")
-                        output_name = os.path.join(args.output_dir, f'{case_name}_label_n0.nii.gz') # TODO
-                        segmentation_nii = nib.Nifti1Image(np.flip(segmentation.cpu().numpy()[0][0], axis=1), affine=affine, header=header) 
-                        nib.save(img=segmentation_nii, filename=output_name)
-                        print(f'Saved to {output_name}')
+            
+            modal_idx = 0
+            sample_denorm = np.clip(sample.detach().cpu().numpy()[0, :, :, :], a_min=-1, a_max=1) # remove very high and low values
 
-                # Defining sampling loop
-                sample_fn = diffusion.p_sample_loop 
-                model_output, label_condition = sample_fn(model=model,
-                                shape=img.shape,
-                                noise=img,
-                                time=args.sampling_steps,
-                                mode=args.train_mode,
-                                label_condition=label_condition,
-                                use_wavelet=args.use_wavelet,
-                                use_label_cond_conv=args.use_label_cond_conv,
-                                clip_denoised=args.clip_denoised,
-                                model_kwargs=None,
-                                    )
+            if args.train_mode == "tumour_inpainting":
+                roi = sample * blured_mask[0] 
+                not_roi = healthy_ct_scan * (1-blured_mask[0])
+                sample = roi + not_roi
 
-                if args.use_wavelet:
-                    B, C, D, H, W = model_output.size()
-
-                    # Convert output of the model back to full resolution 
-                    modal_idx = -1
-                    for model_output_idx in range(0, C, 8):
-                        modal_idx +=1
-                        sample = idwt(model_output[:, 0+modal_idx*8, :, :, :].view(B, 1, H, W, D) * 3.,
-                                            model_output[:, 1+modal_idx*8, :, :, :].view(B, 1, H, W, D),
-                                            model_output[:, 2+modal_idx*8, :, :, :].view(B, 1, H, W, D),
-                                            model_output[:, 3+modal_idx*8, :, :, :].view(B, 1, H, W, D),
-                                            model_output[:, 4+modal_idx*8, :, :, :].view(B, 1, H, W, D),
-                                            model_output[:, 5+modal_idx*8, :, :, :].view(B, 1, H, W, D),
-                                            model_output[:, 6+modal_idx*8, :, :, :].view(B, 1, H, W, D),
-                                            model_output[:, 7+modal_idx*8, :, :, :].view(B, 1, H, W, D))
-                else:
-                    sample = model_output
-
-                if len(sample.shape) == 5:
-                    sample = sample.squeeze(dim=1)  # don't squeeze batch dimension for bs 1
-                
-                
-                modal_idx = 0
                 sample_denorm = np.clip(sample.detach().cpu().numpy()[0, :, :, :], a_min=-1, a_max=1) # remove very high and low values
-
-                if args.train_mode == "tumour_inpainting":
-                    roi = sample * blured_mask[0] 
-                    not_roi = healthy_ct_scan * (1-blured_mask[0])
-                    sample = roi + not_roi
-
-                    sample_denorm = np.clip(sample.detach().cpu().numpy()[0, :, :, :], a_min=-1, a_max=1) # remove very high and low values
-                    
-                    sample_denorm = rescale_array(
-                        arr=sample_denorm, 
-                        minv=(healthy_ct_scan_origin_intensities.cpu().numpy().min()), 
-                        maxv=(healthy_ct_scan_origin_intensities.cpu().numpy().max())
-                        )
-                elif args.dataset=='c_brats':
-                    data = nib.load(case_path).get_fdata()
-                    out_clipped = np.clip(data, np.quantile(data, 0.001), np.quantile(data, 0.999))
-                    clip_min = np.min(out_clipped)
-                    clip_max = np.max(out_clipped)
-
-                    sample_denorm = rescale_array(
-                            arr=sample_denorm, 
-                            minv=int(clip_min), 
-                            maxv=int(clip_max)
-                            )
-                else:
-                    sample_denorm = rescale_array(
-                        arr=sample_denorm, 
-                        minv=int(args.clip_min), 
-                        maxv=int(args.clip_max)
-                        )
                 
-                if args.train_mode=="default_tumour_inpainting":
-                    sample_denorm_corrected = np.flip(sample_denorm, axis=1)  
-                    synth_ct_scan_output = os.path.join(args.output_dir, f'{case_name}_CT_n0.nii.gz') # TODO
-                    # Saving the output of the model
-                    img = nib.Nifti1Image(sample_denorm_corrected, affine=affine, header=header) 
-                    nib.save(img=img, filename=synth_ct_scan_output)
-                    # Saving the label
-                    output_name = os.path.join(args.output_dir, f'{case_name}_label_n0.nii.gz') # TODO
-                    label_corrected = np.flip(label_crop_pad[0][0].detach().cpu().numpy(), axis=1)  
-                    img = nib.Nifti1Image(label_corrected, affine=affine, header=header)
-                    nib.save(img=img, filename=output_name)
-                    print(f'Output of the model saved to {synth_ct_scan_output}')
-                elif args.dataset == 'c_brats':
-                    sample_denorm_corrected = sample_denorm[8:-8, 8:-8, 50:-51]
-                    sample_denorm_corrected = np.flip(sample_denorm_corrected, axis=1) 
-                    sample_denorm_corrected = np.flip(sample_denorm_corrected, axis=0) 
-                    # Saving the output of the model
-                    synth_ct_scan_output = os.path.join(args.output_dir, f'{case_name}_n0.nii.gz') # TODO
-                    img = nib.Nifti1Image(sample_denorm_corrected, affine=affine, header=header) 
-                    nib.save(img=img, filename=synth_ct_scan_output)
-                    print(f'Output of the model saved to {synth_ct_scan_output}')
-                elif args.train_mode == "tumour_inpainting":
-                    # Save the full resolution scan with the synthetic tumour
-                    new_ct_scan_full_res_np =  np.copy(healthy_ct_scan_full_res.detach().cpu().numpy())
-                    new_ct_scan_full_res_np = new_ct_scan_full_res_np[0][0]
-                    new_ct_scan_full_res_np[sagittal[0]:sagittal[1], coronal[0]:coronal[1], axial[0]:axial[1]] = sample_denorm
-                    output_name = os.path.join(args.output_dir, f'{case_name}_CT_n0.nii.gz')
-                    img = nib.Nifti1Image(new_ct_scan_full_res_np[64:-64, 64:-64, 64:-64,], affine=affine, header=header)
-                    nib.save(img=img, filename=output_name)
-                    # 
-                    new_label_full_res_np = np.zeros_like(new_ct_scan_full_res_np)
-                    new_label_full_res_np[sagittal[0]:sagittal[1], coronal[0]:coronal[1], axial[0]:axial[1]] = label_crop_pad[0][0].float().detach().cpu().numpy()
-                    output_name = os.path.join(args.output_dir, f'{case_name}_label_n0.nii.gz')
-                    img = nib.Nifti1Image(new_label_full_res_np[64:-64, 64:-64, 64:-64,], affine=affine, header=header) 
-                    nib.save(img=img, filename=output_name)
-                else:
-                    sample_denorm_corrected = sample_denorm[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1] 
-                    # Saving the output of the model
-                    sample_denorm_corrected = np.flip(sample_denorm_corrected, axis=1)  
-                    synth_ct_scan_output = os.path.join(args.output_dir, f'{case_name}_CT_n0.nii.gz') # TODO
-                    img = nib.Nifti1Image(sample_denorm_corrected, affine=affine, header=header) 
-                    nib.save(img=img, filename=synth_ct_scan_output)
-                    print(f'Output of the model saved to {synth_ct_scan_output}')
+                sample_denorm = rescale_array(
+                    arr=sample_denorm, 
+                    minv=(healthy_ct_scan_origin_intensities.cpu().numpy().min()), 
+                    maxv=(healthy_ct_scan_origin_intensities.cpu().numpy().max())
+                    )
+            elif args.dataset=='c_brats':
+                data = nib.load(case_path).get_fdata()
+                out_clipped = np.clip(data, np.quantile(data, 0.001), np.quantile(data, 0.999))
+                clip_min = np.min(out_clipped)
+                clip_max = np.max(out_clipped)
+
+                sample_denorm = rescale_array(
+                        arr=sample_denorm, 
+                        minv=int(clip_min), 
+                        maxv=int(clip_max)
+                        )
+            else:
+                sample_denorm = rescale_array(
+                    arr=sample_denorm, 
+                    minv=int(args.clip_min), 
+                    maxv=int(args.clip_max)
+                    )
             
-                """
-                if label_condition!=None and args.train_mode!="default_tumour_inpainting":
-                    label_condition_np = label_condition.cpu().float().detach().numpy()
-                    if args.dataset == 'hnn_tumour_inpainting':
-                        if args.use_dilation:
-                            naming = ["no_contrast_tensor", "contrast_tensor", "label_crop_pad", "label_crop_pad_dilated", "healthy_ct_scan"]
-                        else:
-                            naming = ["no_contrast_tensor", "contrast_tensor", "label_crop_pad", "healthy_ct_scan"]
-                        for i in range(label_condition.shape[0]):
-                            for j in range(label_condition.shape[1]):
-                                output_name = os.path.join(args.output_dir, f'{case_name}_{naming[j]}_{ind}.nii.gz')
-                                img = nib.Nifti1Image(label_condition_np[i, j, :, :, :], affine=affine, header=header) 
-                                nib.save(img=img, filename=output_name)
-                                print(f'Saved to {output_name}')
-                """
-                        
-        except Exception as e:
-            print(f"Error -> case_path: {case_path}") 
-            print(f"Error -> seg_path: {seg_path}") 
-            print(f"{e}") 
+            if args.train_mode=="default_tumour_inpainting":
+                sample_denorm_corrected = np.flip(sample_denorm, axis=1)  
+                synth_ct_scan_output = os.path.join(args.output_dir, f'{case_name}_CT_n0.nii.gz') # TODO
+                # Saving the output of the model
+                img = nib.Nifti1Image(sample_denorm_corrected, affine=affine, header=header) 
+                nib.save(img=img, filename=synth_ct_scan_output)
+                # Saving the label
+                output_name = os.path.join(args.output_dir, f'{case_name}_label_n0.nii.gz') # TODO
+                label_corrected = np.flip(label_crop_pad[0][0].detach().cpu().numpy(), axis=1)  
+                img = nib.Nifti1Image(label_corrected, affine=affine, header=header)
+                nib.save(img=img, filename=output_name)
+                print(f'Output of the model saved to {synth_ct_scan_output}')
+            elif args.dataset == 'c_brats':
+                sample_denorm_corrected = sample_denorm[8:-8, 8:-8, 50:-51]
+                sample_denorm_corrected = np.flip(sample_denorm_corrected, axis=1) 
+                sample_denorm_corrected = np.flip(sample_denorm_corrected, axis=0) 
+                # Saving the output of the model
+                synth_ct_scan_output = os.path.join(args.output_dir, f'{case_name}_n0.nii.gz') # TODO
+                img = nib.Nifti1Image(sample_denorm_corrected, affine=affine, header=header) 
+                nib.save(img=img, filename=synth_ct_scan_output)
+                print(f'Output of the model saved to {synth_ct_scan_output}')
+            elif args.train_mode == "tumour_inpainting":
+                # Save the full resolution scan with the synthetic tumour
+                new_ct_scan_full_res_np =  np.copy(healthy_ct_scan_full_res.detach().cpu().numpy())
+                new_ct_scan_full_res_np = new_ct_scan_full_res_np[0][0]
+                new_ct_scan_full_res_np[sagittal[0]:sagittal[1], coronal[0]:coronal[1], axial[0]:axial[1]] = sample_denorm
+                output_name = os.path.join(args.output_dir, f'{case_name}_CT_n0.nii.gz')
+                img = nib.Nifti1Image(new_ct_scan_full_res_np[64:-64, 64:-64, 64:-64,], affine=affine, header=header)
+                nib.save(img=img, filename=output_name)
+                # 
+                new_label_full_res_np = np.zeros_like(new_ct_scan_full_res_np)
+                new_label_full_res_np[sagittal[0]:sagittal[1], coronal[0]:coronal[1], axial[0]:axial[1]] = label_crop_pad[0][0].float().detach().cpu().numpy()
+                output_name = os.path.join(args.output_dir, f'{case_name}_label_n0.nii.gz')
+                img = nib.Nifti1Image(new_label_full_res_np[64:-64, 64:-64, 64:-64,], affine=affine, header=header) 
+                nib.save(img=img, filename=output_name)
+            else:
+                sample_denorm_corrected = sample_denorm[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1] 
+                # Saving the output of the model
+                sample_denorm_corrected = np.flip(sample_denorm_corrected, axis=1)  
+                synth_ct_scan_output = os.path.join(args.output_dir, f'{case_name}_CT_n0.nii.gz') # TODO
+                img = nib.Nifti1Image(sample_denorm_corrected, affine=affine, header=header) 
+                nib.save(img=img, filename=synth_ct_scan_output)
+                print(f'Output of the model saved to {synth_ct_scan_output}')
+                    
+        #except Exception as e:
+        #    print(f"Error -> case_path: {case_path}") 
+        #    print(f"Error -> seg_path: {seg_path}") 
+        #    print(f"{e}") 
             
 
 def create_argparser():

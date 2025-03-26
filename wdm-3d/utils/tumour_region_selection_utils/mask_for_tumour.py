@@ -301,9 +301,9 @@ def create_mask_for_tumour(totalseg_input, totalseg_output):
     print(f"Final segmentation saved as {output_path}")
     
 if __name__ == "__main__":
-    files_path = "/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/results/runs/hnn_CT_concat_cond__data_augment_7_11_2024_18:20:10/Correct_naming"
+    files_path = "../../runs/hnn_CT_concat_cond__data_augment_7_11_2024_18:20:10/Correct_naming"
     for file_name in os.listdir(files_path):
         if "generated" in file_name:
-            totalseg_input = f"/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/results/runs/hnn_CT_concat_cond__data_augment_7_11_2024_18:20:10/Correct_naming/{file_name}"
+            totalseg_input = f"../../results/runs/hnn_CT_concat_cond__data_augment_7_11_2024_18:20:10/Correct_naming/{file_name}"
         totalseg_output = files_path
         create_mask_for_tumour(totalseg_input, totalseg_output)

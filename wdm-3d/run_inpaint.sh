@@ -3,10 +3,10 @@
 SEED=42;                  # randomness seed for sampling
 CHANNELS=64;              # number of model base channels (we use 64 for all experiments)
 MODE='c_sample';             # train vs sample / c_train vs c_sample
-TRAIN_MODE=tumour_inpainting;     # Default, tumour_inpainting (to replace the healthy region generated with tumour), conv_before_concat, concat_cond, default_tumour_inpainting (trained giving the seg as condition, but noise in all scan)
+TRAIN_MODE=tumour_inpainting;     # tumour_inpainting (to replace the healthy region generated with tumour, better for inference), default_tumour_inpainting (trained giving the seg as condition, but noise in all scan, better for training)
 # TODO: TRAIN_MODE needs to be tumour_inpainting for the always known case
 USE_DILATION=True;                # True to create and use a version dilated of the segmentation (in the data loader)
-DATASET=hnn_tumour_inpainting;          # hnn or c_brats (for conditional brats) or hnn_tumour_inpainting
+DATASET=hnn_tumour_inpainting;          # hnn_tumour_inpainting
 MODEL='ours_unet_128';    # 'ours_unet_256', 'ours_wnet_128', 'ours_wnet_256'
 
 USE_WAVELET=False;
@@ -23,7 +23,7 @@ if [[ $TRAIN_MODE == 'tumour_inpainting' ]]; then
   TUMOUR_WEIGHT=10; # This is mainly for the always known version (set to 10) # TODO for training
   USE_DATA_AUGMENTATION=False; # This is True mainly for the default version # TODO for training
   if [[ $MODE == 'c_sample' ]]; then
-    BLUR_MASK=full_blur; # edge_blur for full noise on label tumour / full_blur for blur on all dilated tumour (some background information is present on the place of the tumour)
+    BLUR_MASK=edge_blur; # edge_blur for full noise on label tumour / full_blur for blur on all dilated tumour (some background information is present on the place of the tumour)
     USE_DATA_AUGMENTATION=False; # 
   fi
   if [[ $USE_DILATION == 'True' ]]; then
@@ -43,7 +43,7 @@ if [[ $TRAIN_MODE == 'default_tumour_inpainting' ]]; then
   TUMOUR_WEIGHT=10; 
   USE_DATA_AUGMENTATION=True;
   if [[ $MODE == 'c_sample' ]]; then
-    BLUR_MASK=full_blur; # edge_blur for full noise on label tumour / full_blur for blur on all dilated tumour (some background information is present on the place of the tumour)
+    BLUR_MASK=edge_blur; # edge_blur for full noise on label tumour / full_blur for blur on all dilated tumour (some background information is present on the place of the tumour)
     USE_DATA_AUGMENTATION=True; # 
   fi
   if [[ $USE_DILATION == 'True' ]]; then
@@ -54,19 +54,17 @@ fi
 echo IN_CHANNEL=${IN_CHANNEL};
 
 # settings for sampling/inference
-ITERATIONS=2000;             # training iteration (as a multiple of 1k) checkpoint to use for sampling
-SAMPLING_STEPS=1000;         # number of steps for accelerated sampling, 0 for the default 1000
+ITERATIONS=001;             # training iteration (as a multiple of 1k) checkpoint to use for sampling
+SAMPLING_STEPS=100;         # number of steps for accelerated sampling, 0 for the default 1000
 ## 200
-RUN_DIR="runs/hnn_tumour_inpainting_CT_default_tumour_inpainting__data_augment_20_11_2024_11:07:31/";               # tensorboard dir to be set for the evaluation
-OUTPUT_DIR=/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/results/Synthetic_Datasets/Whole_scans/Tumour_inpaint/with_mask/full_blur/200/Original_1000
-INPUT_DIR=/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/results/Synthetic_Datasets/Whole_scans/Bone_segmentation/200/Original_1000
-#OUTPUT_DIR=/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/results/Synthetic_Datasets/Whole_scans/Tumour_inpaint/edge_blur/200/realCT_fakeTumour # For real dataset
-#INPUT_DIR=/projects/brats2023_a_f/Aachen/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/ # For real dataset
+RUN_DIR="runs/hnn_tumour_inpainting_CT_default_tumour_inpainting__DA_tumorW_10_25_3_2025_18:11:32/";               # tensorboard dir to be set for the evaluation
+OUTPUT_DIR=./results/Synthetic_Datasets/Whole_scans/Tumour_inpaint/with_mask/full_blur/200/Original_1000
+INPUT_DIR=./results/Synthetic_Datasets/Whole_scans/Bone/200/Original_1000
 FROM_MONAI_LOADER=False;
 
 ## 1000
 ## RUN_DIR="runs/hnn_tumour_inpainting_CT_default_tumour_inpainting__DA_tumorW_10_18_12_2024_14:25:08/";
-## OUTPUT_DIR="/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/results/Synthetic_Datasets/Whole_scans/Tumour_inpaint/$BLUR_MASK/1000/Original_1000";
+## OUTPUT_DIR="./results/Synthetic_Datasets/Whole_scans/Tumour_inpaint/$BLUR_MASK/1000/Original_1000";
 
 # detailed settings (no need to change for reproducing)
 if [[ $MODEL == 'ours_unet_128' ]]; then
@@ -101,70 +99,20 @@ else
   echo "MODEL TYPE NOT FOUND -> Check the supported configurations again";
 fi
 
-# some information and overwriting batch size for sampling
-# (overwrite in case you want to sample with a higher batch size)
-# no need to change for reproducing
 
-#/work/bl256603/HnN_cancer/HnN_cancer_data/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256
-#/projects/brats2023_a_f/Aachen/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256
-if [[ $MODE == 'sample' ]]; then
-  echo "MODE: sample"
-  BATCH_SIZE=1;
-elif [[ $MODE == 'c_sample' ]]; then
-  BATCH_SIZE=1;
-  echo "MODE: c_sample"
-  if [[ $DATASET == 'hnn' ]]; then
-    echo "Dataset: Head and neck cancer";
-    DATA_DIR=/projects/brats2023_a_f/Aachen/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256;
-  elif [[ $DATASET == 'c_brats' ]]; then
-    echo "DATASET: Conditional BRATS";
-    DATA_DIR=/projects/brats2023_a_f/BRAINTUMOUR/data/brats2023/ASNR-MICCAI-BraTS2023-GLI-Challenge-TrainingData;
-  elif [[ $DATASET == 'hnn_tumour_inpainting' ]]; then
+if [[ $MODE == 'c_train' ]]; then
+  if [[ $DATASET == 'hnn_tumour_inpainting' ]]; then
     echo "DATASET: hnn_tumour_inpainting";
-    DATA_DIR=/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/utils/hnn.csv; # This will be the csv file 
-  else
-    echo "DATASET NOT FOUND -> Check the supported datasets again";
-  fi
-elif [[ $MODE == 'train' ]]; then
-  if [[ $DATASET == 'brats' ]]; then
-    echo "MODE: training";
-    echo "DATASET: BRATS";
-    DATA_DIR=/projects/brats2023_a_f/BRAINTUMOUR/data/brats2023/ASNR-MICCAI-BraTS2023-GLI-Challenge-TrainingData;
-  elif [[ $DATASET == 'lidc-idri' ]]; then
-    echo "MODE: training";
-    echo "Dataset: LIDC-IDRI";
-    DATA_DIR=~/wdm-3d/data/LIDC-IDRI/;
-  elif [[ $DATASET == 'hnn' ]]; then
-    echo "MODE: training";
-    echo "Dataset: Head and neck cancer";
-    DATA_DIR=/projects/brats2023_a_f/Aachen/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256;
-  elif [[ $DATASET == 'hnn_tumour_inpainting' ]]; then
-    echo "DATASET: hnn_tumour_inpainting";
-    DATA_DIR=/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/utils/hnn.csv; # This will be the csv file 
-  else
-    echo "DATASET NOT FOUND -> Check the supported datasets again";
-  fi
-elif [[ $MODE == 'c_train' ]]; then
-  if [[ $DATASET == 'hnn' ]]; then
-    echo "MODE: c_training";
-    echo "Dataset: Head and neck cancer";
-    DATA_DIR=/projects/brats2023_a_f/Aachen/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256;
-  elif [[ $DATASET == 'c_brats' ]]; then
-    echo "MODE: training";
-    echo "DATASET: Conditional BRATS";
-    DATA_DIR=/projects/brats2023_a_f/BRAINTUMOUR/data/brats2023/ASNR-MICCAI-BraTS2023-GLI-Challenge-TrainingData;
-  elif [[ $DATASET == 'hnn_tumour_inpainting' ]]; then
-    echo "DATASET: hnn_tumour_inpainting";
-    DATA_DIR=/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/utils/hnn.csv; # This will be the csv file 
+    DATA_DIR=./utils/hnn.csv; # This will be the csv file 
   else
     echo "DATASET NOT FOUND -> Check the supported datasets again";
   fi
 fi
 
 if [[ $USE_DATA_AUGMENTATION == 'True' ]]; then
-  DATA_DIR=/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/utils/hnn_DA.csv; 
+  DATA_DIR=./utils/hnn_DA.csv; 
   if [[ $MODE == 'c_sample' ]]; then
-    DATA_DIR=/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/utils/hnn.csv;
+    DATA_DIR=./utils/hnn.csv;
   fi
   echo "$DATA_DIR"
 fi
@@ -203,12 +151,12 @@ COMMON="
 "
 TRAIN="
 --data_dir=${DATA_DIR}
---resume_checkpoint=/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/wdm-3d/runs/hnn_tumour_inpainting_CT_default_tumour_inpainting__DA_tumorW_10_28_11_2024_14:37:59/checkpoints/hnn_tumour_inpainting_1395000.pt
---resume_step=1395000
+--resume_checkpoint=
+--resume_step=0
 --image_size=${IMAGE_SIZE}
 --use_fp16=False
 --lr=1e-5
---save_interval=5000
+--save_interval=100
 --tumour_weight=${TUMOUR_WEIGHT}
 --data_seg_augment=False
 --label_cond_noise=False 
@@ -220,11 +168,7 @@ TRAIN="
 --use_dilation=${USE_DILATION}
 --use_data_augmentation=${USE_DATA_AUGMENTATION}
 "
-  
-# when tumour_weight > 0 the tumour loss is added, which means that the it is added a mse loss for the tumour voxels
-# when label_cond_noise=True, it adds the same noise that was used to add into the input image to the segmentation.
-#--devices=${GPU}
-# TODO diffusion_steps
+
 SAMPLE="
 --data_dir=${DATA_DIR}
 --data_mode=${DATA_MODE}
@@ -248,7 +192,6 @@ SAMPLE="
 --from_monai_loader=${FROM_MONAI_LOADER}
 --input_dir=${INPUT_DIR}
 "
-#--devices=${GPU}
 
 echo "${DATA_DIR}";
 

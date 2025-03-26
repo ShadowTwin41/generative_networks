@@ -132,7 +132,7 @@ def get_crop_tensors_no_random(healthy_ct_scan_full_res, segmentation, device):
     """
     # Padding the volume so no region ouside of the volume is selected
     healthy_ct_scan_full_res = np.clip(healthy_ct_scan_full_res, -200, 200) # TODO in case of using -1000 and 1000
-    healthy_ct_scan_full_res = np.pad(healthy_ct_scan_full_res, pad_width=64, mode='constant', constant_values=-200) # -200 background
+    healthy_ct_scan_full_res = np.pad(healthy_ct_scan_full_res, pad_width=64, mode='constant', constant_values=-200) # -200 background TODO (Change to -1000 in case of [-1000:1000])
     segmentation = np.pad(segmentation, pad_width=64, mode='constant', constant_values=0) # 0 background
    
     # Select center
@@ -393,21 +393,21 @@ def main(args):
     model.eval()
     model.cuda()
 
-    with open('../../HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/data_split.json', 'r') as file:
+    with open('/projects/brats2023_a_f/Aachen/HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/data_split.json', 'r') as file:
         training_cases = json.load(file)
         training_cases = training_cases['training']
-    datal = training_cases 
+    datal = training_cases # TODO
     
     
     # datal = [] # TODO for real cases
-    for case in training_cases:
-        training_cases
-        if "empty" not in case['seg']:
-            datal.append(case)
+    #for case in training_cases:
+    #    training_cases
+    #    if "empty" not in case['seg']:
+    #        datal.append(case)
             
     print(f"Number of cases for inference: {len(datal)}")
     # Get list of segmentations
-    args.seg_path = "../../HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/seg"
+    args.seg_path = "../HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256/seg"
     with open(args.json_file, 'r') as file:
         data_train = json.load(file)
         data_train = data_train['training']
@@ -441,7 +441,7 @@ def main(args):
 
             print(f"Loaded {case_path}")
             # Get mask file (place to insert the tumour)
-            mask_file_path = os.path.join(f"../results/Synthetic_Datasets/Whole_scans/Bone_segmentation/Mask_for_tumour_inpaint", args.output_dir.split('/')[-1], scheduler_name, f"{case_name}_CT_n0_tumour_place.nii.gz")
+            mask_file_path = os.path.join(f"./results/Synthetic_Datasets/Whole_scans/Bone_segmentation/Mask_for_tumour_inpaint", args.output_dir.split('/')[-1], scheduler_name, f"{case_name}_CT_n0_tumour_place.nii.gz")
             
             # Get contrast 
             contrast_value = batch["contrast"]
@@ -475,7 +475,7 @@ def main(args):
             label_condition = th.cat((no_contrast_tensor, contrast_tensor, label_crop_pad), dim=1) 
             
             print(f"Case_name: {case_name.split('_')[1]}")
-            
+            #print(f"Seg_name: {seg_name.split('_')[1].split('.nii.gz')[0]}")
 
             if args.use_dilation or args.use_mask_blur:
                 # Perform binary dilation
@@ -492,7 +492,6 @@ def main(args):
             else:
                 blurred_mask = label_crop_pad.detach().clone()
 
-            # Assuming final_image is a PyTorch tensor
             # Convert the final_image tensor to a NumPy array if it's a tensor
             input_model = torch.cat((noise_start, label_condition), dim=1).cuda()
             healthy_ct_scan_original = healthy_ct_scan.detach().clone()

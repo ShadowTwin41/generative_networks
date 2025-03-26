@@ -284,7 +284,7 @@ def __main__():
                 plt.title(f'{t}', fontsize=16)
                 plt.axis('off')
             plt.suptitle(f'idx: {idx}', fontsize=16)
-            plt.savefig(f"/projects/brats2023_a_f/Aachen/aritifcial-head-and-neck-cts/WDM3D/PatchDDM-3D/utils/sample_{slice}.png", format='png')
+            plt.savefig(f"../trash/sample_{slice}.png", format='png')
             plt.close()
         
         if ("hnn" in args.dataset.lower()):
