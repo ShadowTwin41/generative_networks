@@ -36,7 +36,7 @@ pip install \
     matplotlib==3.8.3 \
     tqdm==4.66.2 \
     dicom2nifti==2.4.10
-
+pip install scikit-image   pip install TotalSegmentator
 Install PyTorch from https://pytorch.org/get-started/locally/
 pip install diffusers["torch"] transformers
 pip install monai
