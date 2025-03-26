@@ -2,13 +2,12 @@
 
 
 ## Table of Contents
-
 - [Generation of Synthetic Datasets Will Solve Anonymisation Problem for Collaborative Medical Image Analysis and Data Sharing: Feasibility Demonstrated in Head and Neck CT Images and Brain Tumour MRI Images](#generation-of-synthetic-datasets-will-solve-anonymisation-problem-for-collaborative-medical-image-analysis-and-data-sharing-feasibility-demonstrated-in-head-and-neck-ct-images-and-brain-tumour-mri-images)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Run conditional training with WDM](#run-conditional-training-with-wdm)
   - [nnUNet - Segmentation](#nnunet---segmentation)
-  - [Ground truth bone:](#ground-truth-bone)
+  - [Ground truth bone](#ground-truth-bone)
   - [Evaluation metrics](#evaluation-metrics)
   - [License](#license)
 
@@ -179,7 +178,7 @@ USE_WAVELET=False;
 We saved the version installed of the nnUNet, which is available in the nnUNet folder. 
 
 No major changes were made to it, therefore, installing the nnUNet from the [source](https://github.com/MIC-DKFZ/nnUNet) might lead to the same or better results/performance. 
-## Ground truth bone:
+## Ground truth bone
 The following repositories were used to create the ground truth for bone segmentation. 
 Follow the steps in each of these:
 * [TotalSegmentator](https://github.com/wasserth/TotalSegmentator)
