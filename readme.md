@@ -64,18 +64,22 @@ pip install TotalSegmentator
  
  * src/notebooks contains the codes for inference.  The script in src/run /CT_HNC_synthetic_generation can also be used for it.
  
+  * For inference:
+    * ```src/notebooks```  
+    * The script in ```src/run /CT_HNC_synthetic_generation.py``` can also be used.
+  
 ## Run conditional training with WDM
 1️⃣ -> ```cd wdm-3d```
 
 💻 To start the training with the full resolution scans:
   *   In the run.sh (for the CT dataset), or in run_brats.sh (for the MRI dataset) file. Ensure that:
-      * MODE='c_train' # For training
+      * ```MODE='c_train'``` # For training
         * To resume the training: ```--resume_checkpoint='...' --resume_step=...```
 
       * MODE='c_sample' # For inference
         * ```ITERATIONS=...; SAMPLING_STEPS=1000; RUN_DIR="runs/..."; OUTPUT_DIR=./results/...; ```
-      * TRAIN_MODE='conv_before_concat', 'concat_cond' or 'wavelet_cond'
-      * --save_interval=100 # Adjust this value to your machine
+      * ```TRAIN_MODE='conv_before_concat', 'concat_cond' or 'wavelet_cond'```
+      * ```--save_interval=100``` # Adjust this value to your machine
 
 ### Configurations for training each model (Full resolution)
  * ❗ -> for the CT, use the file ```run.sh```
@@ -163,7 +167,7 @@ USE_WAVELET=True;
 
       * MODE='c_sample' # For inference
         * ```ITERATIONS=...; SAMPLING_STEPS=1000; RUN_DIR="runs/..."; OUTPUT_DIR=./results/...; ```
-      * --save_interval=100 # Adjust this value to your machine
+      * ```--save_interval=100``` # Adjust this value to your machine
   
   * $DDPM_{all\_cat}^{200}$:
 ```
