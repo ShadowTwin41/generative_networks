@@ -15,5 +15,5 @@ echo "DATA_DIR=$DATA_DIR"
 
 python 3_0_Compute_MS-SSIM_CT.py $DATA_DIR $CLIP_MIN $CLIP_MAX $JSON_FILE_PATH
 
-## sbatch run_MSSSIM_CT.sh "Whole_scans/Tumour_inpaint/full_blur/200/Original_1000"
+## bash run_MSSSIM_CT.sh "Whole_scans/Tumour_inpaint/full_blur/200/Original_1000"
 

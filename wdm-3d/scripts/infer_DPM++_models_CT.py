@@ -336,7 +336,7 @@ def main_conv_before_concat(number_of_cylces):
         in_channels = 32
         label_cond_in_channels = 3
         use_label_cond_conv = True
-        pretrained_weights_path = '../runs/hnn_CT_conv_before_concat__DA_tumorW_0_25_3_2025_14:02:50/checkpoints/hnn_001000.pt'  # Specify the correct path
+        pretrained_weights_path = '../runs/hnn_CT_conv_before_concat__DA_tumorW_0_6_5_2025_11:23:10/checkpoints/hnn_2000000.pt'  # Specify the correct path
             
         model = get_model(in_channels=in_channels, 
                         label_cond_in_channels=label_cond_in_channels, 
@@ -493,7 +493,7 @@ def main_concat_cond(number_of_cylces):
         in_channels = 11
         label_cond_in_channels = 0
         use_label_cond_conv = False
-        pretrained_weights_path = '../runs/hnn_CT_concat_cond__DA_tumorW_0_25_3_2025_14:02:26/checkpoints/hnn_001000.pt'
+        pretrained_weights_path = '../runs/hnn_CT_concat_cond__DA_tumorW_0_6_5_2025_10:47:42/checkpoints/hnn_2000000.pt'
             
         model = get_model(in_channels=in_channels, 
                         label_cond_in_channels=label_cond_in_channels, 
@@ -661,7 +661,7 @@ def main_wavelet_cond(number_of_cylces):
         in_channels = 32
         label_cond_in_channels = 0
         use_label_cond_conv = False
-        pretrained_weights_path = '../runs/hnn_CT_wavelet_cond__DA_tumorW_0_25_3_2025_14:02:14/checkpoints/hnn_001000.pt'  # Specify the correct path
+        pretrained_weights_path = '../runs/hnn_CT_wavelet_cond__DA_tumorW_0_6_5_2025_11:32:05/checkpoints/hnn_2000000.pt'  # Specify the correct path
             
         model = get_model(in_channels=in_channels, 
                         label_cond_in_channels=label_cond_in_channels, 
@@ -703,15 +703,15 @@ def main_wavelet_cond(number_of_cylces):
 
 #### hnn_CT_conv_before_concat__DA_tumorW_0_28_11_2024_11:19:14 ####
 #* HU between -200 and 200. tumour weight 0. DA ROI. ROI and segmentation as condition, feeded first to a conv layer.
-#main_conv_before_concat(number_of_cylces=1)
+main_conv_before_concat(number_of_cylces=1)
 
 #### hnn_CT_concat_cond__DA_tumorW_0_28_11_2024_11:36:09 #### 
 #* HU between -200 and 200. tumour weight 0. DA ROI. downsampled ROI and segmentation as condition.
-#main_concat_cond(number_of_cylces=1)
+main_concat_cond(number_of_cylces=1)
 
 #### hnn_CT_wavelet_cond__DA_tumorW_0_3_12_2024_15:36:29 ####
 #* HU between -200 and 200. tumour weight 0. DA ROI. wavelet tranformed ROI and segmentation as condition.
-#main_wavelet_cond(number_of_cylces=1)
+main_wavelet_cond(number_of_cylces=1)
 
 
 
@@ -831,7 +831,7 @@ def main_concat_cond_bone_200(number_of_cylces):
         in_channels = 10
         label_cond_in_channels = 0
         use_label_cond_conv = False
-        pretrained_weights_path = '../runs/hnn_CT_concat_cond__DA_tumorW_0_25_3_2025_14:13:26/checkpoints/hnn_001000.pt'  # Specify the correct path
+        pretrained_weights_path = '../runs/hnn_CT_concat_cond__DA_tumorW_0_6_5_2025_11:31:21/checkpoints/hnn_2000000.pt'  # Specify the correct path
             
         model = get_model(in_channels=in_channels, 
                         label_cond_in_channels=label_cond_in_channels, 
@@ -981,7 +981,7 @@ def main_concat_cond_bone_1000(number_of_cylces):
         in_channels = 10
         label_cond_in_channels = 0
         use_label_cond_conv = False
-        pretrained_weights_path = '../runs/hnn_CT_concat_cond__DA_tumorW_0_25_3_2025_14:13:49/checkpoints/hnn_001000.pt'  # Specify the correct path
+        pretrained_weights_path = '../runs/hnn_CT_concat_cond__DA_tumorW_0_6_5_2025_11:39:00/checkpoints/hnn_2000000.pt'  # Specify the correct path
             
         model = get_model(in_channels=in_channels, 
                         label_cond_in_channels=label_cond_in_channels, 
@@ -1024,8 +1024,8 @@ def main_concat_cond_bone_1000(number_of_cylces):
         
 #### hnn_CT_concat_cond__DA_tumorW_0_28_11_2024_14:15:39 ####
 #* HU between -200 and 200. DA ROI. downsampled ROI as condition.
-#main_concat_cond_bone_200(number_of_cylces=1)
+main_concat_cond_bone_200(number_of_cylces=1)
 
 #### hnn_CT_concat_cond__DA_tumorW_0_28_11_2024_14:18:20 ####
 #* HU between -1000 and 1000. DA ROI. downsampled ROI as condition.
-#main_concat_cond_bone_1000(number_of_cylces=1)
+main_concat_cond_bone_1000(number_of_cylces=1)

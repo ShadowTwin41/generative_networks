@@ -2,7 +2,7 @@
 SEED=42;                  # randomness seed for sampling
 CHANNELS=64;              # number of model base channels (we use 64 for all experiments)
 MODE='c_train';             # train vs sample / c_train vs c_sample
-TRAIN_MODE=wavelet_cond;     # Default, conv_before_concat (a convolution layer is used to downsample the conditions), concat_cond (the contrast is concat directly without convolution or wavelet), wavelet_cond (the condition is concatenated to the model after using the wavelet transform)
+TRAIN_MODE=conv_before_concat;     # Default, conv_before_concat (a convolution layer is used to downsample the conditions), concat_cond (the contrast is concat directly without convolution or wavelet), wavelet_cond (the condition is concatenated to the model after using the wavelet transform)
 DATASET=c_brats;          # hnn or c_brats (for conditional brats)
 MODALITY='t1c';
 MODEL='ours_unet_256';    # 'ours_unet_256', 'ours_wnet_128', 'ours_wnet_256'
@@ -49,7 +49,7 @@ echo IN_CHANNEL=${IN_CHANNEL};
 
 # settings for sampling/inference
 ITERATIONS=001;             # training iteration (as a multiple of 1k) checkpoint to use for sampling
-SAMPLING_STEPS=100;         # number of steps for accelerated sampling, 0 for the default 1000
+SAMPLING_STEPS=1000;         # number of steps for accelerated sampling, 0 for the default 1000
 RUN_DIR="runs/c_brats_t1c_wavelet_cond__tumorW_0_25_3_2025_14:26:21/";               # tensorboard dir to be set for the evaluation # Most recente "runs/hnn_CT_24_8_2024_13:59:14"
 OUTPUT_DIR=./results/Synthetic_Datasets/MRI/Tumour_generation/wavelet/Original_1000
 

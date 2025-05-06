@@ -353,7 +353,7 @@ def tumour_inpainting_200(number_of_cylces):
         out_channels = 1
         label_cond_in_channels = 0
         use_label_cond_conv = False
-        pretrained_weights_path = '../runs/hnn_tumour_inpainting_CT_default_tumour_inpainting__DA_tumorW_10_25_3_2025_18:11:32/checkpoints/hnn_tumour_inpainting_001000.pt'  # Specify the correct path
+        pretrained_weights_path = '../runs/hnn_tumour_inpainting_CT_default_tumour_inpainting__DA_tumorW_10_6_5_2025_12:31:43/checkpoints/hnn_tumour_inpainting_2000000.pt'  # Specify the correct path
         channel_mult=[1, 2, 2, 4, 4]
         model = get_model(in_channels=in_channels, 
                         out_channels=out_channels,
@@ -471,7 +471,7 @@ def  tumour_inpainting_1000(number_of_cylces):
         out_channels = 1
         label_cond_in_channels = 0
         use_label_cond_conv = False
-        pretrained_weights_path = '../runs/hnn_tumour_inpainting_CT_default_tumour_inpainting__DA_tumorW_10_25_3_2025_18:11:32/checkpoints/hnn_tumour_inpainting_001000.pt' # Specify the correct path
+        pretrained_weights_path = '../runs/hnn_tumour_inpainting_CT_default_tumour_inpainting__DA_tumorW_10_6_5_2025_12:32:10/checkpoints/hnn_tumour_inpainting_2000000.pt' # Specify the correct path
         channel_mult=[1, 2, 2, 4, 4]
 
         model = get_model(in_channels=in_channels, 
@@ -520,4 +520,4 @@ tumour_inpainting_200(number_of_cylces=1)
 
 #### hnn_tumour_inpainting_CT_default_tumour_inpainting__DA_tumorW_10_28_11_2024_14:37:59
 #* HU between -1000 and 1000. tumour weight 10. 
-#tumour_inpainting_1000(number_of_cylces=4)
+tumour_inpainting_1000(number_of_cylces=1)

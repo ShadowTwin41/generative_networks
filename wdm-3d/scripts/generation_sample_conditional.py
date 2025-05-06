@@ -473,6 +473,12 @@ def main():
             
             mask_file_path = os.path.join(f"./results/Synthetic_Datasets/Whole_scans/Bone_segmentation/Mask_for_tumour_inpaint", args.output_dir.split('/')[-2], "Original_1000", f"{case_name}_CT_n0_tumour_place.nii.gz")
             contrast_value = batch["contrast"]
+            if not os.path.isfile(case_path):
+                print(f"Warning: Doesn't exist. Skipped {case_path}")
+                continue
+            if not os.path.isfile(mask_file_path):
+                print(f"Warning: Mask for inpainting not available. Run run_mask_for_tumour_creator.sh. Skipped {mask_file_path}")
+                continue
         else:
             # Each batch contains the same data used for training, i.e., scans and conditions
             if "scan_ct_meta_dict" in batch:
@@ -490,6 +496,7 @@ def main():
             case_name = case_path.split('/')[-1].split(".nii.gz")[0]
         #try:
         if os.path.isfile(os.path.join(args.output_dir, f'{case_name}_CT_n0.nii.gz')):
+            print(f"Already created: {os.path.join(args.output_dir, f'{case_name}_CT_n0.nii.gz')}")
             continue # Check if file was generated already
         if "empty" in seg_path and args.no_seg==False and (args.train_mode!="default_tumour_inpainting" or args.train_mode!="tumour_inpainting"):
             print(f"Skipping: {seg_path}")

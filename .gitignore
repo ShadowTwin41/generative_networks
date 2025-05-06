@@ -3,12 +3,14 @@ Dataset/
 experiments/
 logs/
 results/
+**/results/*
 trash/
 .vscode/
 run/outputs/
+runs/
 **/runs/*
 **/HnN_cancer_data/*
-**/results/*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

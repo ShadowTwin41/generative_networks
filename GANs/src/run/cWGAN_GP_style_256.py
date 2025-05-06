@@ -3,6 +3,9 @@ import os
 from os import listdir, makedirs, environ
 from os.path import join, exists, dirname, basename
 
+sys.path.append(".")
+sys.path.append("..")
+
 import json
 import numpy as np
 import nibabel as nib
@@ -315,7 +318,6 @@ def get_loader():
     )
     
     #train_ds = Dataset(train_data, transform=train_transforms)
-    
     # Creating data loader
     train_loader = DataLoader(
         train_ds,
@@ -801,15 +803,15 @@ if __name__ == "__main__":
     ##############################
 
     # Defining working directory
-    HOME_DIR = "/projects"
-    WORK_DIR = "/projects"
-    HPCWORK = "/projects"
+    HOME_DIR = "../../.."
+    WORK_DIR = "../../.."
+    HPCWORK = "../../.."
 
     # Device
     DEVICE_G = "cuda:0"
     DEVICE_D = "cuda:1"
     # Last imports
-    sys.path.insert(1, join(HOME_DIR, "aritifcial-head-and-neck-cts/GANs/src"))
+    sys.path.insert(1, join(HOME_DIR, "GANs/src"))
 
     IN_TYPE = args.IN_TYPE
     if IN_TYPE == "Back_Noise":
@@ -854,18 +856,18 @@ if __name__ == "__main__":
 
     if UNET=="Unet_FC":
         print("USING THE UNET Fully Connected LIKE GENERATOR")
-        from network.cWGAN_Style_Unet_256_FC import Generator, Critic
+        from networks.cWGAN_Style_Unet_256_FC import Generator, Critic
     elif UNET=="Unet":
         print("USING THE UNET LIKE GENERATOR")
-        from network.cWGAN_Style_Unet_256 import Generator, Critic
+        from networks.cWGAN_Style_Unet_256 import Generator, Critic
     else:
         print("WELCOME TO THE ERROR ZONE")
 
     # json file
-    DATA_LIST_FILE_PATH = join(WORK_DIR, "aritifcial-head-and-neck-cts/GANs/data/training.json") # Path where to save the json file 
+    DATA_LIST_FILE_PATH = join(WORK_DIR, "GANs/data/training.json") # Path where to save the json file 
 
     # Checkpoints dir
-    CHECKPOINT_DIR = join(HPCWORK, "aritifcial-head-and-neck-cts", "GANs", "checkpoint/style_256", EXP_NAME)
+    CHECKPOINT_DIR = join(HPCWORK, "GANs/checkpoint/style_256", EXP_NAME)
 
     # Dataset folder and vars
     DATA_DIR = join(WORK_DIR, "HnN_cancer_data/HnN_cancer_data_1_1_1_256_256_256") # WORK_DIR: Working dir

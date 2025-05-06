@@ -1,7 +1,7 @@
 # general settings
 SEED=42;                  # randomness seed for sampling
 CHANNELS=64;              # number of model base channels (we use 64 for all experiments)
-MODE='c_train';             # train vs sample / c_train vs c_sample
+MODE='c_sample';             # train vs sample / c_train vs c_sample
 TRAIN_MODE=concat_cond;     # Default, conv_before_concat (a convoluytion layer is used to downsample the conditions), concat_cond (the contrast is concat directly without convolution or wavelet), wavelet_cond (the condition is concatenated to the model after using the wavelet transform)
 DATASET=hnn;          # hnn or c_brats (for conditional brats)
 MODEL='ours_unet_256';    # 'ours_unet_256', 'ours_wnet_128', 'ours_wnet_256'
@@ -21,7 +21,7 @@ else
 fi
 
 # If USE_LABEL_COND_CONV is False, LABEL_COND_IN_CHANNELS is meaningless
-LABEL_COND_IN_CHANNELS=3 # Number of channels of the condition used as input (hnn-> no_contrast/contrast/label; brats->three_label_channel)
+LABEL_COND_IN_CHANNELS=0 # Number of channels of the condition used as input (hnn-> no_contrast/contrast/label; brats->three_label_channel)
                         # This is used for the convolution before concat with the image transformed with the wavelet.
 
 FULL_BACKGROUND=False; # False if the ROI should have variable size
@@ -58,10 +58,10 @@ fi
 echo IN_CHANNEL=${IN_CHANNEL};
 
 # settings for sampling/inference
-ITERATIONS=001;             # training iteration (as a multiple of 1k) checkpoint to use for sampling
+ITERATIONS=2000;             # training iteration (as a multiple of 1k) checkpoint to use for sampling
 SAMPLING_STEPS=1000;         # number of steps for accelerated sampling, 0 for the default 1000
-RUN_DIR="runs/hnn_CT_concat_cond__DA_tumorW_0_25_3_2025_14:13:26/";               # tensorboard dir to be set for the evaluation # Most recente "runs/hnn_CT_24_8_2024_13:59:14"
-OUTPUT_DIR=./results/Synthetic_Datasets/Whole_scans/Bone/200/Original_1000
+RUN_DIR="runs/hnn_CT_concat_cond__DA_tumorW_0_6_5_2025_11:31:21/";               # tensorboard dir to be set for the evaluation # Most recente "runs/hnn_CT_24_8_2024_13:59:14"
+OUTPUT_DIR=./results/Synthetic_Datasets/Whole_scans/Bone_segmentation/200/Original_1000
 
 
 # detailed settings (no need to change for reproducing)
@@ -188,8 +188,8 @@ TRAIN="
 --no_seg=${NO_SEG}
 --full_background=${FULL_BACKGROUND}
 --modality=CT
---clip_min=-1000
---clip_max=1000
+--clip_min=-200
+--clip_max=200
 --train_mode=${TRAIN_MODE}
 --remove_tumour_from_loss=${REMOVE_TUMOUR_FROM_LOSS}
 "
@@ -209,8 +209,8 @@ SAMPLE="
 --no_seg=${NO_SEG}
 --full_background=${FULL_BACKGROUND}
 --modality=CT
---clip_min=-1000
---clip_max=1000
+--clip_min=-200
+--clip_max=200
 --mode=${MODE}
 --train_mode=${TRAIN_MODE}
 "

@@ -330,7 +330,7 @@ def main_brats_t1c_conv_before_concat(number_of_cylces):
         in_channels = 32
         label_cond_in_channels = 3
         use_label_cond_conv = True
-        pretrained_weights_path = '../runs/c_brats_t1c_conv_before_concat__tumorW_0_25_3_2025_14:26:30/checkpoints/c_brats_001000.pt'  
+        pretrained_weights_path = '../runs/c_brats_t1c_conv_before_concat__tumorW_0_6_5_2025_12:02:03/checkpoints/c_brats_2000000.pt'  
             
         model = get_model(in_channels=in_channels, 
                         label_cond_in_channels=label_cond_in_channels, 
@@ -479,7 +479,7 @@ def main_brats_t1c_concat_cond(number_of_cylces):
         in_channels = 11
         label_cond_in_channels = 0
         use_label_cond_conv = False
-        pretrained_weights_path = '../runs/c_brats_t1c_concat_cond__tumorW_0_25_3_2025_14:26:21/checkpoints/c_brats_001000.pt'   # Specify the correct path
+        pretrained_weights_path = '../runs/c_brats_t1c_concat_cond__tumorW_0_6_5_2025_11:40:40/checkpoints/c_brats_2000000.pt'   # Specify the correct path
             
         model = get_model(in_channels=in_channels, 
                         label_cond_in_channels=label_cond_in_channels, 
@@ -636,7 +636,7 @@ def main_brats_t1c_wavelet_cond(number_of_cylces):
         in_channels = 32
         label_cond_in_channels = 0
         use_label_cond_conv = False
-        pretrained_weights_path = '../runs/c_brats_t1c_wavelet_cond__tumorW_0_25_3_2025_14:26:21/checkpoints/c_brats_001000.pt'   # Specify the correct path
+        pretrained_weights_path = '../runs/c_brats_t1c_wavelet_cond__tumorW_0_6_5_2025_12:01:14/checkpoints/c_brats_2000000.pt'   # Specify the correct path
             
         model = get_model(in_channels=in_channels, 
                         label_cond_in_channels=label_cond_in_channels, 
@@ -673,12 +673,12 @@ def main_brats_t1c_wavelet_cond(number_of_cylces):
 
 #### c_brats_t1c_conv_before_concat__tumorW_0_28_11_2024_13:02:05 ####
 #* tumour weight 0. Three channel segmentation as condition, feeded first to a conv layer.
-#main_brats_t1c_conv_before_concat(number_of_cylces=1)
+main_brats_t1c_conv_before_concat(number_of_cylces=1)
 
 #### c_brats_t1c_concat_cond__tumorW_0_28_11_2024_16:45:44 ####
 #* tumour weight 0. downsampled three channel segmentation as condition.
-#main_brats_t1c_concat_cond(number_of_cylces=1)
+main_brats_t1c_concat_cond(number_of_cylces=1)
 
 #### c_brats_t1c_wavelet_cond__tumorW_0_3_12_2024_15:36:12 ####
 #* tumour weight 0. wavelet transformed three channel segmentation as condition.
-# main_brats_t1c_wavelet_cond(number_of_cylces=1)
+main_brats_t1c_wavelet_cond(number_of_cylces=1)

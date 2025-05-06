@@ -43,7 +43,7 @@ if [[ $TRAIN_MODE == 'default_tumour_inpainting' ]]; then
   TUMOUR_WEIGHT=10; 
   USE_DATA_AUGMENTATION=True;
   if [[ $MODE == 'c_sample' ]]; then
-    BLUR_MASK=edge_blur; # edge_blur for full noise on label tumour / full_blur for blur on all dilated tumour (some background information is present on the place of the tumour)
+    BLUR_MASK=None; # edge_blur for full noise on label tumour / full_blur for blur on all dilated tumour (some background information is present on the place of the tumour)
     USE_DATA_AUGMENTATION=True; # 
   fi
   if [[ $USE_DILATION == 'True' ]]; then
@@ -54,12 +54,12 @@ fi
 echo IN_CHANNEL=${IN_CHANNEL};
 
 # settings for sampling/inference
-ITERATIONS=001;             # training iteration (as a multiple of 1k) checkpoint to use for sampling
-SAMPLING_STEPS=100;         # number of steps for accelerated sampling, 0 for the default 1000
+ITERATIONS=2000;             # training iteration (as a multiple of 1k) checkpoint to use for sampling
+SAMPLING_STEPS=1000;         # number of steps for accelerated sampling, 0 for the default 1000
 ## 200
-RUN_DIR="runs/hnn_tumour_inpainting_CT_default_tumour_inpainting__DA_tumorW_10_25_3_2025_18:11:32/";               # tensorboard dir to be set for the evaluation
-OUTPUT_DIR=./results/Synthetic_Datasets/Whole_scans/Tumour_inpaint/with_mask/full_blur/200/Original_1000
-INPUT_DIR=./results/Synthetic_Datasets/Whole_scans/Bone/200/Original_1000
+RUN_DIR="runs/hnn_tumour_inpainting_CT_default_tumour_inpainting__DA_tumorW_10_6_5_2025_12:32:10/";               # tensorboard dir to be set for the evaluation
+OUTPUT_DIR=./results/Synthetic_Datasets/Whole_scans/Tumour_inpaint/inpainted/$BLUR_MASK/1000/Original_1000
+INPUT_DIR=./results/Synthetic_Datasets/Whole_scans/Bone_segmentation/1000/Original_1000
 FROM_MONAI_LOADER=False;
 
 ## 1000
@@ -162,8 +162,8 @@ TRAIN="
 --label_cond_noise=False 
 --full_background=True
 --modality=CT
---clip_min=-200
---clip_max=200
+--clip_min=-1000
+--clip_max=1000
 --train_mode=${TRAIN_MODE}
 --use_dilation=${USE_DILATION}
 --use_data_augmentation=${USE_DATA_AUGMENTATION}

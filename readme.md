@@ -1,11 +1,16 @@
-# Generation of Synthetic Datasets Will Solve Anonymisation Problem for Collaborative Medical Image Analysis and Data Sharing: Feasibility Demonstrated in Head and Neck CT Images and Brain Tumour MRI Images
+# Can Synthetic Data Replace Real Data? Feasibility Demonstrated in Head and Neck CT Images and Brain Tumour MRI Images
 
 
 ## Table of Contents
-- [Generation of Synthetic Datasets Will Solve Anonymisation Problem for Collaborative Medical Image Analysis and Data Sharing: Feasibility Demonstrated in Head and Neck CT Images and Brain Tumour MRI Images](#generation-of-synthetic-datasets-will-solve-anonymisation-problem-for-collaborative-medical-image-analysis-and-data-sharing-feasibility-demonstrated-in-head-and-neck-ct-images-and-brain-tumour-mri-images)
+- [Can Synthetic Data Replace Real Data? Feasibility Demonstrated in Head and Neck CT Images and Brain Tumour MRI Images](#can-synthetic-data-replace-real-data-feasibility-demonstrated-in-head-and-neck-ct-images-and-brain-tumour-mri-images)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
+  - [GANs training](#gans-training)
   - [Run conditional training with WDM](#run-conditional-training-with-wdm)
+    - [Configurations for training each model (Full resolution)](#configurations-for-training-each-model-full-resolution)
+    - [Configurations for training each model (inpainting models)](#configurations-for-training-each-model-inpainting-models)
+      - [For inference](#for-inference)
+    - [DPM++ Inference](#dpm-inference)
   - [nnUNet - Segmentation](#nnunet---segmentation)
   - [Ground truth bone](#ground-truth-bone)
   - [Evaluation metrics](#evaluation-metrics)
@@ -31,6 +36,7 @@ conda install -c conda-forge \
     pip -y
 
 pip install \
+    nilearn \
     nibabel==5.2.0 \
     blobfile==2.1.1 \
     tensorboard==2.16.2 \
@@ -48,28 +54,20 @@ Install PyTorch from https://pytorch.org/get-started/locally/
 pip install TotalSegmentator
 ```
  ## GANs training 
- It requires two GPUs to train (one for the Generator and one for the Discriminator)
- To train for the CT in src/run
- python cWGAN_GP_style_256.py  --W_ADV_D 1 --W_ADV_G 1 --W_PWA 1000 --W_PWT 100 --W_GP 10 --IN_CHANNEL_G 3 --OUT_CHANNEL_G 1 --IN_CHANNEL_D 4  --LR_D 0.0002 --LR_G 0.0002 --TOTAL_EPOCHS 1000 --NUM_WORKERS 6 --DATASET training --UNET Unet_FC --SKIP_LATENT False --TAHN_ACT False --DA True --NORM_FUNC Linear --CLIP_MIN -200 --CLIP_MAX 200 --EXP_NAME W_PWA100__W_PWT10__Unet_FC_min200_200 --RESUME 117
+ 1️⃣ -> ```cd GANs```
+ * It requires two GPUs to train (one for the Generator and one for the Discriminator)
+ * To train for the CT in src/run
+   * ```python cWGAN_GP_style_256.py  --W_ADV_D 1 --W_ADV_G 1 --W_PWA 1000 --W_PWT 100 --W_GP 10 --IN_CHANNEL_G 3 --OUT_CHANNEL_G 1 --IN_CHANNEL_D 4  --LR_D 0.0002 --LR_G 0.0002 --TOTAL_EPOCHS 1000 --NUM_WORKERS 6 --DATASET training --UNET Unet_FC --SKIP_LATENT False --TAHN_ACT False --DA True --NORM_FUNC Linear --CLIP_MIN -200 --CLIP_MAX 200 --EXP_NAME W_PWA1000__W_PWT100__Unet_FC_min200_200 --RESUME 117```
  
- To train Brats
- python cWGAN_GP_style_256_BraTS.py  --W_ADV_D 1 --W_ADV_G 1 --W_PWA 100 --W_PWT 100 --W_GP 10 --IN_CHANNEL_G 3 --OUT_CHANNEL_G 1 --IN_CHANNEL_D 4  --LR_D 0.0002 --LR_G 0.0002 --TOTAL_EPOCHS 1000 --NUM_WORKERS 6 --DATASET training --UNET Unet_FC --SKIP_LATENT False --TAHN_ACT False --DA True --EXP_NAME BraTS_W_PWA100__W_PWT100__Unet_FC_new --RESUME 990
+ * To train Brats in src/run
+   * ```python cWGAN_GP_style_256_BraTS.py  --W_ADV_D 1 --W_ADV_G 1 --W_PWA 100 --W_PWT 100 --W_GP 10 --IN_CHANNEL_G 3 --OUT_CHANNEL_G 1 --IN_CHANNEL_D 4  --LR_D 0.0002 --LR_G 0.0002 --TOTAL_EPOCHS 1000 --NUM_WORKERS 6 --DATASET training --UNET Unet_FC --SKIP_LATENT False --TAHN_ACT False --DA True --EXP_NAME BraTS_W_PWA100__W_PWT100__Unet_FC_new --RESUME 990```
  
- src/notebooks contains the codes for inference.  The script in src/run /CT_HNC_synthetic_generation can also be used for it.
- 
- 
- 
- 
- 
- 
- 
- 
- 
+ * src/notebooks contains the codes for inference.  The script in src/run /CT_HNC_synthetic_generation can also be used for it.
  
 ## Run conditional training with WDM
-```cd wdm-3d```
+1️⃣ -> ```cd wdm-3d```
 
-To start the training with the full resolution scans:
+💻 To start the training with the full resolution scans:
   *   In the run.sh (for the CT dataset), or in run_brats.sh (for the MRI dataset) file. Ensure that:
       * MODE='c_train' # For training
         * To resume the training: ```--resume_checkpoint='...' --resume_step=...```
@@ -79,7 +77,12 @@ To start the training with the full resolution scans:
       * TRAIN_MODE='conv_before_concat', 'concat_cond' or 'wavelet_cond'
       * --save_interval=100 # Adjust this value to your machine
 
-  * $M_{all\_conv}^{WDM_{200}}$ or $M_{seg\_conv}^{WDM_{MRI}}$:
+### Configurations for training each model (Full resolution)
+ * ❗ -> for the CT, use the file ```run.sh```
+ * ❗ -> for the MRI, use the file ```run_brats.sh``` 
+
+ ⚠️ -> For training ```MODE='c_train'``` | For inference ```MODE='c_sample'```
+  * $WDM_{all\_conv}^{200}$ or $WDM_{seg\_conv}^{MRI}$:
 ```
 TRAIN_MODE='conv_before_concat';
 NO_SEG=False;
@@ -94,7 +97,7 @@ USE_WAVELET=True;
 --clip_max=200;
 ```
 
-  * $M_{all\_d}^{WDM_{200}}$ or $M_{seg\_d}^{WDM_{MRI}}$:
+  * $WDM_{all\_d}^{200}$ or $WDM_{seg\_d}^{MRI}$:
 ```
 TRAIN_MODE='concat_cond';
 NO_SEG=False;
@@ -109,7 +112,7 @@ USE_WAVELET=True;
 --clip_max=200;
 ```
 
-  * $M_{all\_w}^{WDM_{200}}$ or $M_{seg\_w}^{WDM_{MRI}}$:
+  * $WDM_{all\_w}^{200}$ or $WDM_{seg\_w}^{MRI}$:
 ```
 TRAIN_MODE='wavelet_cond';
 NO_SEG=False;
@@ -124,7 +127,7 @@ USE_WAVELET=True;
 --clip_max=200;
 ```
 
-  * $M_{ROI\_d}^{WDM_{200}}$:
+  * $WDM_{ROI\_d}^{200}$:
 ```
 TRAIN_MODE='concat_cond';
 NO_SEG=True;
@@ -139,7 +142,7 @@ USE_WAVELET=True;
 --clip_max=200;
 ```
 
-  * $M_{ROI\_d}^{WDM_{1000}}$:
+  * $WDM_{ROI\_d}^{1000}$:
 ```
 TRAIN_MODE='concat_cond';
 NO_SEG=True;
@@ -153,9 +156,8 @@ USE_WAVELET=True;
 --clip_min=-1000;
 --clip_max=1000;
 ```
-
-To start the training of the inpainting model:
-  *   In the run_inpaint.sh Ensure that:
+### Configurations for training each model (inpainting models)
+  *   In the ```run_inpaint.sh``` Ensure that:
       * MODE='c_train' # For training
         * To resume the training: ```--resume_checkpoint='...' --resume_step=...```
 
@@ -163,7 +165,7 @@ To start the training of the inpainting model:
         * ```ITERATIONS=...; SAMPLING_STEPS=1000; RUN_DIR="runs/..."; OUTPUT_DIR=./results/...; ```
       * --save_interval=100 # Adjust this value to your machine
   
-  * $M_{all\_cat}^{DDPM_{200}}$:
+  * $DDPM_{all\_cat}^{200}$:
 ```
 TRAIN_MODE=default_tumour_inpainting; 
 DATASET=hnn_tumour_inpainting; 
@@ -172,7 +174,7 @@ USE_WAVELET=False;
 --clip_max=200;
 ```
 
-  * $M_{all\_cat}^{DDPM_{1000}}$:
+  * $DDPM_{all\_cat}^{1000}$:
 ```
 TRAIN_MODE=default_tumour_inpainting; 
 DATASET=hnn_tumour_inpainting; 
@@ -181,15 +183,19 @@ USE_WAVELET=False;
 --clip_max=1000;
 ```
 
-* For inference
+#### For inference
   * ```TRAIN_MODE=default_tumour_inpainting; BLUR_MASK=None; FROM_MONAI_LOADER=True; ``` # To generate cropped volumes
-  * ```TRAIN_MODE=tumour_inpainting; BLUR_MASK='edge_blur' or 'full_blur' OUTPUT_DIR='./results/...'; INPUT_DIR='./results/...';``` # To inpaint in full resolution scan 
+  * ```TRAIN_MODE=tumour_inpainting; BLUR_MASK='edge_blur' or 'full_blur'; FROM_MONAI_LOADER=False; OUTPUT_DIR='./results/...'; INPUT_DIR='./results/...';``` # To inpaint in full resolution scan. Do not forget to create the masks for the region to inpaint, using ```run_mask_for_tumour_creator.sh```. The TotalSegmentator might need a distinct PyTorch version.
 
-
+### DPM++ Inference
 * For inference with ```scheduler_list = ["DPM++_2M", "DPM++_2M_Karras", "DPM++_2M_SDE", "DPM++_2M_SDE_Karras"]```
-  * Make the changes in ```scripts/infer_DPM++_models_CT.py``` or ```scripts/infer_DPM++_models_MRI.py``` or ```scripts/infer_DPM++_inpaint_models.py``` and run it.
-    * Mainly ```pretrained_weights_path```
-  * For inpainting a tumour on full resolution scans, use ```run_inder_DPM++_inpaint.sh``` 
+  * Make the changes in (mainly ```pretrained_weights_path```):
+    *  ```scripts/infer_DPM++_models_CT.py``` -> for full resolution CT;
+    *  ```scripts/infer_DPM++_models_MRI.py``` -> for full resolution MRI; 
+    *  ```scripts/infer_DPM++_inpaint_models.py``` -> for the cropped volumes;
+    *  ```scripts/infer_DPM++_tumour_inpainting.py``` -> for the inpaint of tumor on full resolution scans. 
+  
+  * For inpainting a tumour on full resolution scans, use ```run_infer_DPM++_inpaint.sh``` 
     * Change: ```CLIP_MIN=; CLIP_MAX=; MODEL_PATH=; USE_MASK_BLUR=; output_dir=; data_dir=;```
 
 ## nnUNet - Segmentation
@@ -206,11 +212,12 @@ Follow the steps in each of these:
 * [AMASSS_CBCT](https://github.com/Maxlo24/AMASSS_CBCT)
 
 ## Evaluation metrics
+❗-> These files might not be adapted to your use case. Analyse them before runing.
 In the folder wdm-3d/notebooks are the files used for computing the MAE, MS-SSIM and the Radiomics.
 
-* The files ```Radiomics_tumour.py``` ```Radiomics_soft_tissue.py``` and ```Radiomics_bone.py``` can be used to extract the features of the tumour region, soft tissue and bone, respectively.
+* The files ```Radiomics_tumour.py``` ```Radiomics_soft_tissue.py``` and ```Radiomics_bone.py``` can be used to extract the features of the tumour region, soft tissue and bone, respectively. Adapt this files to your case. 
 
-* For data mining, use the  ```Radiomics.ipynb``` or ```Radiomics_MRI.ipynb``` notebooks.
+* For data mining, use the  ```Radiomics.ipynb``` or ```Radiomics_MRI.ipynb``` notebooks. These files might be changed! No guaranties are given.
 
 ## License
 

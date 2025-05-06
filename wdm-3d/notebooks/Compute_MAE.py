@@ -155,7 +155,7 @@ root_synthetic_data = "../results/Synthetic_Datasets/Whole_scans"
 print("Starting...")
 for experiment_fold in os.listdir(root_synthetic_data):
     experiment_path = os.path.join(root_synthetic_data, experiment_fold)
-    if experiment_fold == "Bone_segmentation" and False:
+    if experiment_fold == "Bone_segmentation":
         for hu_value in os.listdir(experiment_path):
             hu_value_path = os.path.join(experiment_path, hu_value)
             if hu_value=="200":
@@ -171,7 +171,7 @@ for experiment_fold in os.listdir(root_synthetic_data):
                 print("#################")
                 print(f"Doing {fake_data_dir}")
                 compute_MAE_folder_Bone(clip_min, clip_max, load_only_fake, pad_or_crop, fake_data_dir)
-    elif experiment_fold == "Tumour_generation" and False: # This is already done 
+    elif experiment_fold == "Tumour_generation":
         clip_min = -200
         clip_max = 200
         for concat_method in os.listdir(experiment_path):
@@ -181,7 +181,7 @@ for experiment_fold in os.listdir(root_synthetic_data):
                 print("#################")
                 print(f"Doing {fake_data_dir}")
                 compute_MAE_folder_Tumour(clip_min, clip_max, load_only_fake, pad_or_crop, fake_data_dir)
-    elif experiment_fold == "Tumour_inpaint"  and False:
+    elif experiment_fold == "Tumour_inpaint":
         for mask_type in os.listdir(experiment_path):
             mask_type_path = os.path.join(experiment_path, mask_type)
             for hu_value in os.listdir(mask_type_path):
