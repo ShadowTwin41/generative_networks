@@ -145,11 +145,11 @@ def get_loader(args):
             )
     else:
         train_transforms.append(
+             ScaleIntensityRanged(keys=[f"{scan_name}"], a_min=int(args.clip_min), a_max=int(args.clip_max), b_min=int(args.clip_min), b_max=int(args.clip_max), clip=True)
+         )
+        train_transforms.append(
             CropScanCenterInTumour(keys=scan_name, dilation=args.use_dilation, translate_range=None)
             )       
-        train_transforms.append(
-            ScaleIntensityRanged(keys=[scan_name], a_min=int(args.clip_min), a_max=int(args.clip_max), b_min=-1.0, b_max=1.0, clip=True)
-        )
         if args.use_dilation:
             train_transforms.append(ToTensord(keys=[scan_name, 'no_contrast_tensor', 'contrast_tensor', 'label_crop_pad_dilated', 'scan_volume_crop', 'scan_volume_crop_pad', 'label', 'label_crop_pad', 'center_x', 'center_y', 'center_z', 'x_extreme_min', 'x_extreme_max', 'y_extreme_min', 'y_extreme_max', 'z_extreme_min', 'z_extreme_max', 'x_size', 'y_size', 'z_size']))
         else:
