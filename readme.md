@@ -1,4 +1,4 @@
-# Can Synthetic Data Replace Real Data? Feasibility Demonstrated in Head and Neck CT Images and Brain Tumour MRI Images
+# Beyond Anonymization: A Feasibility Study of Stand-Alone Synthetic Data for Privacy-Preserving Medical AI
 
 
 ## Table of Contents
