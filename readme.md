@@ -2,7 +2,7 @@
 
 
 ## Table of Contents
-- [Can Synthetic Data Replace Real Data? Feasibility Demonstrated in Head and Neck CT Images and Brain Tumour MRI Images](#can-synthetic-data-replace-real-data-feasibility-demonstrated-in-head-and-neck-ct-images-and-brain-tumour-mri-images)
+- [Beyond Anonymization: A Feasibility Study of Stand-Alone Synthetic Data for Privacy-Preserving Medical AI](#can-synthetic-data-replace-real-data-feasibility-demonstrated-in-head-and-neck-ct-images-and-brain-tumour-mri-images)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [GANs training](#gans-training)
