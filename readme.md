@@ -1,8 +1,8 @@
-# Beyond Anonymization: A Feasibility Study of Stand-Alone Synthetic Data for Privacy-Preserving Medical AI
+# Enhancing Privacy: The Utility of Stand-Alone Synthetic CT and MRI for Tumor and Bone Segmentation
 
 
 ## Table of Contents
-- [Beyond Anonymization: A Feasibility Study of Stand-Alone Synthetic Data for Privacy-Preserving Medical AI](#can-synthetic-data-replace-real-data-feasibility-demonstrated-in-head-and-neck-ct-images-and-brain-tumour-mri-images)
+- [Enhancing Privacy: The Utility of Stand-Alone Synthetic CT and MRI for Tumor and Bone Segmentation](#enhancing-privacy-the-utility-of-stand-alone-synthetic-ct-and-mri-for-tumor-and-bone-segmentation)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [GANs training](#gans-training)
