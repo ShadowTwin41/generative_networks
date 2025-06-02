@@ -120,7 +120,7 @@ def get_loader(args):
                         RandRotate90d(keys=new_keys, prob=0.1, max_k=3, lazy=True)
         )
 
-        # Based on file:///Users/andreferreira/Downloads/s10462-023-10453-z.pdf and https://arxiv.org/pdf/2006.06676.pdf
+        # Based on https://arxiv.org/pdf/2006.06676.pdf
         # rotate 45 degrees
         # scale_range (-0.1, 0.1) -> zoom!
         # shear_range (-0.1, 0.1)
