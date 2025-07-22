@@ -2,7 +2,7 @@
 
 
 ## Table of Contents
-- [Enhancing Privacy: The Utility of Stand-Alone Synthetic CT and MRI for Tumor and Bone Segmentation](#enhancing-privacy-the-utility-of-stand-alone-synthetic-ct-and-mri-for-tumor-and-bone-segmentation)
+- [Stand‑Alone Conditional Synthesis of CT/MRI: Quantitative Utility in Tumor and Bone Segmentation]
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [GANs training](#gans-training)
